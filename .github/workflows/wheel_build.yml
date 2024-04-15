@@ -1,0 +1,74 @@
+name: Build Wheels
+
+on:
+  workflow_dispatch:
+  pull_request:
+
+jobs:
+  build_wheels:
+    name: Build wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    env:
+      MACOSX_DEPLOYMENT_TARGET: "10.15"
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, macos-12, windows-latest]
+        cibw_archs: ["auto64"]
+        cibw_build: ["cp38-*", "cp39-*", "cp310-*", "cp311-*"]
+
+    steps:
+      - uses: actions/checkout@v3
+        name: Check out
+        with:
+          submodules: recursive    
+
+      - uses: ilammy/msvc-dev-cmd@v1
+        name: Add MSVS Path
+
+      - uses: ilammy/setup-nasm@v1
+        name: Add NASM
+
+      - uses: actions/setup-python@v4
+        name: Install Python
+        with:
+          python-version: '3.9'
+
+      - name: Install cibuildwheel
+        run: |
+          python -m pip install cibuildwheel==2.16.2 delvewheel wheel
+
+      - name: Building wheels 
+        run: |
+          python -m cibuildwheel --output-dir dist
+        env:
+          CIBW_BUILD: ${{ matrix.cibw_build }}
+          CIBW_BUILD_VERBOSITY: 3
+          CIBW_SKIP: "*musllinux*"
+          CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
+          CIBW_BEFORE_ALL_MACOS: brew install nasm &&
+                          bash ci-utils/install_prereq_linux.sh &&
+                          mkdir -p /tmp/bfiocpp_bld &&
+                          cp -r local_install /tmp/bfiocpp_bld
+          CIBW_BEFORE_ALL_LINUX: curl -L http://mirror.centos.org/centos/8-stream/PowerTools/x86_64/os/Packages/nasm-2.15.03-3.el8.x86_64.rpm -o nasm-2.15.03-3.el8.x86_64.rpm &&
+                                   yum -y install nasm-2.15.03-3.el8.x86_64.rpm &&
+                                   bash ci-utils/install_prereq_linux.sh &&
+                                   yum -y install maven java &&
+                                   mkdir -p /tmp/bfiocpp_bld &&
+                                   cp -r local_install /tmp/bfiocpp_bld
+          CIBW_BEFORE_ALL_WINDOWS: ci-utils\install_prereq_win.bat &&
+                                   xcopy /E /I /y local_install C:\TEMP\bfiocpp_bld\local_install 
+          CIBW_ENVIRONMENT_MACOS: REPAIR_LIBRARY_PATH="/tmp/bfiocpp_bld/local_install/lib:/tmp/bfiocpp_bld/local_install/lib64" ON_GITHUB="TRUE" BFIO_CPP_DEP_DIR="/tmp/bfiocpp_bld/local_install"
+          CIBW_ENVIRONMENT_LINUX: LD_LIBRARY_PATH="/tmp/bfiocpp_bld/local_install/lib:/tmp/bfiocpp_bld/local_install/lib64:$LD_LIBRARY_PATH" ON_GITHUB="TRUE" BFIO_CPP_DEP_DIR="/tmp/bfiocpp_bld/local_install" 
+          CIBW_REPAIR_WHEEL_COMMAND_MACOS: DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-listdeps {wheel} && DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-wheel --require-archs {delocate_archs} -w {dest_dir} {wheel}
+          CIBW_ENVIRONMENT_WINDOWS: PATH="$TEMP\\bfiocpp\\bin;$PATH" ON_GITHUB="TRUE" BFIO_CPP_DEP_DIR="C:\\TEMP\\bfiocpp_bld\\local_install"
+          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -w {dest_dir} {wheel}"
+          CIBW_ARCHS: ${{ matrix.cibw_archs }}
+          CIBW_TEST_REQUIRES: bfio requests numpy ome_zarr
+          CIBW_TEST_COMMAND: python -W default -m unittest discover -s {project}/tests -v
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: bfiocpp-wheels
+          path: dist/*.whl
+          retention-days: 1
