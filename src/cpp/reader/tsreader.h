@@ -6,6 +6,7 @@
 #include <variant>
 #include <iostream>
 #include <tuple>
+#include <optional>
 #include <unordered_map>
 #include "tensorstore/tensorstore.h"
 #include "sequence.h"
@@ -26,9 +27,11 @@ using iter_indicies = std::tuple<std::int64_t,std::int64_t,std::int64_t,std::int
 namespace bfiocpp{
 
 
-class OmeTiffReader{
+enum class FileType {OmeTiff, OmeZarr};
+
+class TsReaderCPP{
 public:
-    OmeTiffReader(const std::string& fname);
+    TsReaderCPP(const std::string& fname, FileType ft );
     std::int64_t GetImageHeight() const ;
     std::int64_t GetImageWidth () const ;
     std::int64_t GetImageDepth () const ;
@@ -55,6 +58,9 @@ private:
                     _num_channels,
                     _num_tsteps;
     std::uint16_t _data_type_code;
+    FileType _file_type;
+    std::optional<int>_z_index, _c_index, _t_index;
+
     tensorstore::TensorStore<void, -1, tensorstore::ReadWriteMode::dynamic> source;
 
 

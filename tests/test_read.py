@@ -1,4 +1,4 @@
-from bfiocpp import TSTiffReader, Seq
+from bfiocpp import TSReader, Seq, FileType
 import unittest
 import requests, pathlib, shutil, logging, sys
 import bfio
@@ -70,7 +70,7 @@ class TestSimpleRead(unittest.TestCase):
 
     def test_read_ome_tif_full(self):
         """test_read_ome_tif_full - Read tiff using TSTiffReader"""
-        br = TSTiffReader(str(TEST_DIR.joinpath("p01_x01_y01_wx0_wy0_c1.ome.tif")))
+        br = TSReader(str(TEST_DIR.joinpath("p01_x01_y01_wx0_wy0_c1.ome.tif")), FileType.OmeTiff)
         assert br._X == 1080
         assert br._Y == 1080
         assert br._Z == 1
@@ -90,8 +90,8 @@ class TestSimpleRead(unittest.TestCase):
 
     def test_read_ome_tif_partial(self):
         """test_read_ome_tif_partial - Read partial tiff read"""
-        with TSTiffReader(
-            str(TEST_DIR.joinpath("p01_x01_y01_wx0_wy0_c1.ome.tif"))
+        with TSReader(
+            str(TEST_DIR.joinpath("p01_x01_y01_wx0_wy0_c1.ome.tif")), FileType.OmeTiff
         ) as br:
             rows = Seq(0, 1023, 1)
             cols = Seq(0, 1023, 1)
@@ -123,7 +123,7 @@ class TestSimpleRead(unittest.TestCase):
         x_max = source_data.shape[0]
         y_max = source_data.shape[1]
 
-        with TSTiffReader(str(TEST_DIR.joinpath("test_output.ome.tiff"))) as test_br:
+        with TSReader(str(TEST_DIR.joinpath("test_output.ome.tiff")), FileType.OmeTiff) as test_br:
             for i in range(100):
                 x_start = random.randint(0, x_max)
                 y_start = random.randint(0, y_max)
@@ -159,7 +159,7 @@ class TestSimpleRead(unittest.TestCase):
 
     def test_read_ome_tif_4d(self):
         """test_read_ome_tif_4d - Read 4D data"""
-        br = TSTiffReader(str(TEST_DIR.joinpath("4d_array.ome.tif")))
+        br = TSReader(str(TEST_DIR.joinpath("4d_array.ome.tif")), FileType.OmeTiff)
         assert br._X == 672
         assert br._Y == 512
         assert br._Z == 21

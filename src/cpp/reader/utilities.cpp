@@ -18,6 +18,16 @@ tensorstore::Spec GetOmeTiffSpecToRead(const std::string& filename){
                             }).value();
 }
 
+tensorstore::Spec GetZarrSpecToRead(const std::string& filename){
+    return tensorstore::Spec::FromJson({{"driver", "zarr"},
+                            {"kvstore", {{"driver", "file"},
+                                         {"path", filename}}
+                            }
+                            }).value();
+}
+
+
+
 uint16_t GetDataTypeCode (std::string_view type_name){
 
   if (type_name == std::string_view{"uint8"}) {return 1;}
@@ -54,5 +64,10 @@ std::string GetUTCString() {
     std::strftime(buffer, bufferSize, "%Y%m%d%H%M%S", &timeInfo);
 
     return std::string(buffer);
+}
+
+std::tuple<std::optional<int>, std::optional<int>, std::optional<int>>ParseMultiscaleMetadata(const std::string& path){
+    //need to implement
+    return {std::make_optional<int>(0), std::make_optional<int>(1), std::make_optional<int>(2)};
 }
 } // ns bfiocpp

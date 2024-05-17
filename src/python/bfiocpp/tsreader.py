@@ -1,14 +1,14 @@
 import numpy as np
 from typing import Tuple
-from .libbfiocpp import OmeTiffReader, Seq  # NOQA: F401
+from .libbfiocpp import TsReaderCPP, Seq, FileType  # NOQA: F401
 
 
-class TSTiffReader:
+class TSReader:
 
     READ_ONLY_MESSAGE: str = "{} is read-only."
 
-    def __init__(self, file_name: str) -> None:
-        self._image_reader: OmeTiffReader = OmeTiffReader(file_name)
+    def __init__(self, file_name: str, file_type: FileType) -> None:
+        self._image_reader: TsReaderCPP = TsReaderCPP(file_name, file_type)
         self._Y: int = self._image_reader.get_image_height()
         self._X: int = self._image_reader.get_image_width()
         self._Z: int = self._image_reader.get_image_depth()
@@ -33,7 +33,7 @@ class TSTiffReader:
     def close(self):
         pass
 
-    def __enter__(self) -> "TSTiffReader":
+    def __enter__(self) -> "TSReader":
         """Handle entrance to a context manager.
 
         This code is called when a `with` statement is used. This allows a
