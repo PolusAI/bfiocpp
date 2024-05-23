@@ -31,7 +31,7 @@ enum class FileType {OmeTiff, OmeZarr};
 
 class TsReaderCPP{
 public:
-    TsReaderCPP(const std::string& fname, FileType ft );
+    TsReaderCPP(const std::string& fname, FileType ft, const std::string& axes_list );
     std::int64_t GetImageHeight() const ;
     std::int64_t GetImageWidth () const ;
     std::int64_t GetImageDepth () const ;

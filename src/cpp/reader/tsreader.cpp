@@ -16,7 +16,7 @@ using ::tensorstore::internal_zarr::ChooseBaseDType;
 
 namespace bfiocpp{
 
-TsReaderCPP::TsReaderCPP(const std::string& fname, FileType ft): _filename(fname), _file_type (ft) {
+TsReaderCPP::TsReaderCPP(const std::string& fname, FileType ft, const std::string& axes_list=""): _filename(fname), _file_type (ft) {
 
     auto read_spec = [fname, ft](){
         if (ft == FileType::OmeTiff){
@@ -51,7 +51,6 @@ TsReaderCPP::TsReaderCPP(const std::string& fname, FileType ft): _filename(fname
         _z_index.emplace(2);
     } else {
         if (image_shape.size() == 5){
-            assert(image_shape.size() >= 2);
             _image_height = image_shape[3];
             _image_width = image_shape[4];
             _image_depth = image_shape[2];    
@@ -61,7 +60,8 @@ TsReaderCPP::TsReaderCPP(const std::string& fname, FileType ft): _filename(fname
             _c_index.emplace(1);
             _z_index.emplace(2);
         } else {
-            std::tie(_t_index, _c_index, _z_index) = ParseMultiscaleMetadata(_filename);
+            assert(image_shape.size() >= 2);
+            std::tie(_t_index, _c_index, _z_index) = ParseMultiscaleMetadata(axes_list, image_shape.size());
             _image_height = image_shape[image_shape.size()-2];
             _image_width = image_shape[image_shape.size()-1];
             if (_t_index.has_value()) {

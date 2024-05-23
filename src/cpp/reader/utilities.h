@@ -16,5 +16,5 @@ tensorstore::Spec GetZarrSpecToRead(const std::string& filename);
 
 uint16_t GetDataTypeCode (std::string_view type_name);
 std::string GetUTCString();
-std::tuple<std::optional<int>, std::optional<int>, std::optional<int>>ParseMultiscaleMetadata(const std::string& path);
+std::tuple<std::optional<int>, std::optional<int>, std::optional<int>>ParseMultiscaleMetadata(const std::string& axes_list, int len);
 } // ns bfiocpp

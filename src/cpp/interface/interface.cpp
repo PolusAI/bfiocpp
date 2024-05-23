@@ -70,7 +70,7 @@ PYBIND11_MODULE(libbfiocpp, m) {
         .def(py::init<const size_t, const size_t, const size_t>());
     
     py::class_<bfiocpp::TsReaderCPP, std::shared_ptr<bfiocpp::TsReaderCPP>>(m, "TsReaderCPP") 
-    .def(py::init<const std::string &, bfiocpp::FileType>()) 
+    .def(py::init<const std::string &, bfiocpp::FileType, const std::string &>()) 
     .def("get_image_height", &bfiocpp::TsReaderCPP::GetImageHeight) 
     .def("get_image_width", &bfiocpp::TsReaderCPP::GetImageWidth) 
     .def("get_image_depth", &bfiocpp::TsReaderCPP::GetImageDepth) 
@@ -79,6 +79,7 @@ PYBIND11_MODULE(libbfiocpp, m) {
     .def("get_tile_depth", &bfiocpp::TsReaderCPP::GetTileDepth) 
     .def("get_channel_count", &bfiocpp::TsReaderCPP::GetChannelCount) 
     .def("get_tstep_count", &bfiocpp::TsReaderCPP::GetTstepCount) 
+    .def("get_datatype", &bfiocpp::TsReaderCPP::GetDataType) 
     .def("get_ome_xml_metadata", &bfiocpp::TsReaderCPP::GetOmeXml)
     .def("get_tile_coordinate",
         [](bfiocpp::TsReaderCPP& tl, std::int64_t y_start, std::int64_t x_start, std::int64_t row_stride, std::int64_t col_stride) { 

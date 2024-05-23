@@ -7,13 +7,14 @@ class TSReader:
 
     READ_ONLY_MESSAGE: str = "{} is read-only."
 
-    def __init__(self, file_name: str, file_type: FileType) -> None:
-        self._image_reader: TsReaderCPP = TsReaderCPP(file_name, file_type)
+    def __init__(self, file_name: str, file_type: FileType, axes_list: str) -> None:
+        self._image_reader: TsReaderCPP = TsReaderCPP(file_name, file_type, axes_list)
         self._Y: int = self._image_reader.get_image_height()
         self._X: int = self._image_reader.get_image_width()
         self._Z: int = self._image_reader.get_image_depth()
         self._C: int = self._image_reader.get_channel_count()
         self._T: int = self._image_reader.get_tstep_count()
+        self._datatype: int = self._image_reader.get_datatype()
 
     def data(
         self, rows: int, cols: int, layers: int, channels: int, tsteps: int
