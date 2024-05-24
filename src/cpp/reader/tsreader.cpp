@@ -85,8 +85,7 @@ TsReaderCPP::TsReaderCPP(const std::string& fname, FileType ft, const std::strin
     }
     
 
-    
-    _data_type = ChooseBaseDType(source.dtype()).value().encoded_dtype;
+    _data_type = source.dtype().name();
     _data_type_code = GetDataTypeCode(_data_type);
 }
 
