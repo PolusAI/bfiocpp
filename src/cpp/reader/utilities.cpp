@@ -2,6 +2,7 @@
 #include <ctime>
 #include <chrono>
 #include "utilities.h"
+#include <cassert>
 
 namespace bfiocpp {
 tensorstore::Spec GetOmeTiffSpecToRead(const std::string& filename){
@@ -17,6 +18,16 @@ tensorstore::Spec GetOmeTiffSpecToRead(const std::string& filename){
                             }},
                             }).value();
 }
+
+tensorstore::Spec GetZarrSpecToRead(const std::string& filename){
+    return tensorstore::Spec::FromJson({{"driver", "zarr"},
+                            {"kvstore", {{"driver", "file"},
+                                         {"path", filename}}
+                            }
+                            }).value();
+}
+
+
 
 uint16_t GetDataTypeCode (std::string_view type_name){
 
@@ -54,5 +65,30 @@ std::string GetUTCString() {
     std::strftime(buffer, bufferSize, "%Y%m%d%H%M%S", &timeInfo);
 
     return std::string(buffer);
+}
+
+std::tuple<std::optional<int>, std::optional<int>, std::optional<int>>ParseMultiscaleMetadata(const std::string& axes_list, int len){
+    
+    std::optional<int> t_index{std::nullopt}, c_index{std::nullopt}, z_index{std::nullopt};
+
+    assert(axes_list.length() <= 5);
+
+    if (axes_list.length() == len){
+        // no speculation
+        for (int i=0; i<axes_list.length(); ++i){
+            if(axes_list[i] == char{'T'}) t_index.emplace(i);
+            if(axes_list[i] == char{'C'}) c_index.emplace(i);
+            if(axes_list[i] == char{'Z'}) z_index.emplace(i);
+        }
+    } else // speculate
+    {
+        if (len == 3) {
+            z_index.emplace(0);
+        } else if (len == 4) {
+            z_index.emplace(1);
+            c_index.emplace(0);
+        }
+    }
+    return {t_index, c_index, z_index};
 }
 } // ns bfiocpp

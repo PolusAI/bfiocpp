@@ -2,7 +2,7 @@
 #include <pybind11/stl_bind.h>
 #include <pybind11/numpy.h>
 #include <tuple>
-#include "../reader/ometiff.h"
+#include "../reader/tsreader.h"
 #include "../reader/sequence.h"
 namespace py = pybind11;
 using bfiocpp::Seq;
@@ -31,7 +31,7 @@ inline py::array as_pyarray_shared_5d(std::shared_ptr<image_data> seq_ptr, size_
     }
 }
 
-py::array get_image_data(bfiocpp::OmeTiffReader& tl, const Seq& rows, const Seq& cols, const Seq& layers, const Seq& channels, const Seq& tsteps) {
+py::array get_image_data(bfiocpp::TsReaderCPP& tl, const Seq& rows, const Seq& cols, const Seq& layers, const Seq& channels, const Seq& tsteps) {
     auto tmp = tl.GetImageData(rows, cols, layers, channels, tsteps);
     auto ih = rows.Stop() - rows.Start() + 1;
     auto iw = cols.Stop() - cols.Start() + 1;
@@ -43,7 +43,7 @@ py::array get_image_data(bfiocpp::OmeTiffReader& tl, const Seq& rows, const Seq&
 }
 
 
-py::array get_iterator_requested_tile_data(bfiocpp::OmeTiffReader& tl,  std::int64_t t_index,
+py::array get_iterator_requested_tile_data(bfiocpp::TsReaderCPP& tl,  std::int64_t t_index,
                                                                         std::int64_t c_index,
                                                                         std::int64_t z_index,
                                                                         std::int64_t y_min, std::int64_t y_max,
@@ -69,42 +69,48 @@ PYBIND11_MODULE(libbfiocpp, m) {
     py::class_<Seq, std::shared_ptr<Seq>>(m, "Seq")  
         .def(py::init<const size_t, const size_t, const size_t>());
     
-    py::class_<bfiocpp::OmeTiffReader, std::shared_ptr<bfiocpp::OmeTiffReader>>(m, "OmeTiffReader") 
-    .def(py::init<const std::string &>()) 
-    .def("get_image_height", &bfiocpp::OmeTiffReader::GetImageHeight) 
-    .def("get_image_width", &bfiocpp::OmeTiffReader::GetImageWidth) 
-    .def("get_image_depth", &bfiocpp::OmeTiffReader::GetImageDepth) 
-    .def("get_tile_height", &bfiocpp::OmeTiffReader::GetTileHeight) 
-    .def("get_tile_width", &bfiocpp::OmeTiffReader::GetTileWidth) 
-    .def("get_tile_depth", &bfiocpp::OmeTiffReader::GetTileDepth) 
-    .def("get_channel_count", &bfiocpp::OmeTiffReader::GetChannelCount) 
-    .def("get_tstep_count", &bfiocpp::OmeTiffReader::GetTstepCount) 
-    .def("get_ome_xml_metadata", &bfiocpp::OmeTiffReader::GetOmeXml)
+    py::class_<bfiocpp::TsReaderCPP, std::shared_ptr<bfiocpp::TsReaderCPP>>(m, "TsReaderCPP") 
+    .def(py::init<const std::string &, bfiocpp::FileType, const std::string &>()) 
+    .def("get_image_height", &bfiocpp::TsReaderCPP::GetImageHeight) 
+    .def("get_image_width", &bfiocpp::TsReaderCPP::GetImageWidth) 
+    .def("get_image_depth", &bfiocpp::TsReaderCPP::GetImageDepth) 
+    .def("get_tile_height", &bfiocpp::TsReaderCPP::GetTileHeight) 
+    .def("get_tile_width", &bfiocpp::TsReaderCPP::GetTileWidth) 
+    .def("get_tile_depth", &bfiocpp::TsReaderCPP::GetTileDepth) 
+    .def("get_channel_count", &bfiocpp::TsReaderCPP::GetChannelCount) 
+    .def("get_tstep_count", &bfiocpp::TsReaderCPP::GetTstepCount) 
+    .def("get_datatype", &bfiocpp::TsReaderCPP::GetDataType) 
+    .def("get_ome_xml_metadata", &bfiocpp::TsReaderCPP::GetOmeXml)
     .def("get_tile_coordinate",
-        [](bfiocpp::OmeTiffReader& tl, std::int64_t y_start, std::int64_t x_start, std::int64_t row_stride, std::int64_t col_stride) { 
+        [](bfiocpp::TsReaderCPP& tl, std::int64_t y_start, std::int64_t x_start, std::int64_t row_stride, std::int64_t col_stride) { 
             auto row_index = static_cast<std::int64_t>(y_start/row_stride);
             auto col_index = static_cast<std::int64_t>(x_start/col_stride);
             return std::make_tuple(row_index, col_index);
         }
     )
     .def("get_image_data",  
-        [](bfiocpp::OmeTiffReader& tl, const Seq& rows, const Seq& cols, const Seq& layers, const Seq& channels, const Seq& tsteps) { 
+        [](bfiocpp::TsReaderCPP& tl, const Seq& rows, const Seq& cols, const Seq& layers, const Seq& channels, const Seq& tsteps) { 
             return get_image_data(tl, rows, cols, layers, channels, tsteps);
         }, py::return_value_policy::reference) 
     .def("send_iterator_read_requests",
-    [](bfiocpp::OmeTiffReader& tl, std::int64_t const tile_height, std::int64_t const tile_width, std::int64_t const row_stride, std::int64_t const col_stride) {
+    [](bfiocpp::TsReaderCPP& tl, std::int64_t const tile_height, std::int64_t const tile_width, std::int64_t const row_stride, std::int64_t const col_stride) {
         tl.SetIterReadRequests(tile_height, tile_width, row_stride, col_stride);
     }) 
     .def("get_iterator_requested_tile_data", 
-    [](bfiocpp::OmeTiffReader& tl,  std::int64_t t_index,
+    [](bfiocpp::TsReaderCPP& tl,  std::int64_t t_index,
                                     std::int64_t c_index,
                                     std::int64_t z_index,
                                     std::int64_t y_min, std::int64_t y_max,
                                     std::int64_t x_min, std::int64_t x_max) {
         return get_iterator_requested_tile_data(tl, t_index, c_index, z_index, y_min, y_max, x_min, x_max);
     }, py::return_value_policy::reference)
-    .def("__iter__", [](bfiocpp::OmeTiffReader& tl){ 
+    .def("__iter__", [](bfiocpp::TsReaderCPP& tl){ 
         return py::make_iterator(tl.iter_request_list.begin(), tl.iter_request_list.end());
         }, py::keep_alive<0, 1>()); 
 
+
+    py::enum_<bfiocpp::FileType>(m, "FileType")
+        .value("OmeTiff", bfiocpp::FileType::OmeTiff)
+        .value("OmeZarr", bfiocpp::FileType::OmeZarr)
+        .export_values();
 }
