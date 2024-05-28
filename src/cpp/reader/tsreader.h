@@ -42,7 +42,6 @@ public:
     std::int64_t GetTstepCount () const;
     std::string GetDataType() const;
     std::shared_ptr<image_data> GetImageData(const Seq& rows, const Seq& cols, const Seq& layers, const Seq& channels, const Seq& tsteps);
-    std::string GetOmeXml() const;
     void SetIterReadRequests(std::int64_t const tile_width, std::int64_t const tile_height, std::int64_t const row_stride, std::int64_t const col_stride);
     //tuple of (T,C,Z,Y_min, Y_max, X_min, X_max)
     std::vector<iter_indicies> iter_request_list;

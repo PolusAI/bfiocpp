@@ -1,6 +1,6 @@
 import numpy as np
 from typing import Tuple
-from .libbfiocpp import TsReaderCPP, Seq, FileType  # NOQA: F401
+from .libbfiocpp import TsReaderCPP, Seq, FileType, get_ome_xml  # NOQA: F401
 
 
 class TSReader:
@@ -21,12 +21,6 @@ class TSReader:
         self, rows: int, cols: int, layers: int, channels: int, tsteps: int
     ) -> np.ndarray:
         return self._image_reader.get_image_data(rows, cols, layers, channels, tsteps)
-
-    def get_ome_metadata(self) -> str:
-        if self._filetype == FileType.OmeTiff:
-            return self._image_reader.get_ome_xml_metadata()
-        else:
-            return ""
 
     def send_iter_read_request(
         self, tile_size: Tuple[int, int], tile_stride: Tuple[int, int]

@@ -9,7 +9,6 @@
 #include "tsreader.h"
 #include "utilities.h"
 #include "type_info.h"
-#include <tiffio.h>
 
 
 using ::tensorstore::internal_zarr::ChooseBaseDType;
@@ -185,32 +184,19 @@ std::shared_ptr<image_data> TsReaderCPP::GetImageData(const Seq& rows, const Seq
     }
 } 
 
-std::string TsReaderCPP::GetOmeXml() const{
-    TIFF *tiff_file = TIFFOpen(_filename.c_str(), "r");
-    std::string OmeXmlInfo{""};
-    if (tiff_file != nullptr) {
-        char* infobuf;        
-        TIFFGetField(tiff_file, TIFFTAG_IMAGEDESCRIPTION , &infobuf);
-        if (strlen(infobuf)>0){
-            OmeXmlInfo = std::string(infobuf);
-        }
-    }
-    TIFFClose(tiff_file);
-    return OmeXmlInfo;
-}
 
 void TsReaderCPP::SetIterReadRequests(std::int64_t const tile_width, std::int64_t const tile_height, std::int64_t const row_stride, std::int64_t const col_stride){
     iter_request_list.clear();
     for(std::int64_t t=0; t<_num_tsteps;++t){
         for(std::int64_t c=0; c<_num_channels;++c){
             for(std::int64_t z=0; z<_image_depth;++z){
-                for(std::int64_t y=0; y<=_image_height;y+=row_stride)
+                for(std::int64_t y=0; y<_image_height;y+=row_stride)
                 {
                     auto y_min = y;
                     auto y_max = y_min + row_stride - 1;
                     y_max = y_max < _image_height ? y_max : _image_height-1;
 
-                    for(std::int64_t x=0; x<=_image_width;x+=col_stride){
+                    for(std::int64_t x=0; x<_image_width;x+=col_stride){
                         auto x_min = x;
                         auto x_max = x_min + col_stride - 1;
                         x_max = x_max < _image_width ? x_max : _image_width-1;

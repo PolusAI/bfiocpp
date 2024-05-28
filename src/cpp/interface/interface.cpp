@@ -4,6 +4,8 @@
 #include <tuple>
 #include "../reader/tsreader.h"
 #include "../reader/sequence.h"
+#include "../reader/utilities.h"
+
 namespace py = pybind11;
 using bfiocpp::Seq;
 
@@ -79,8 +81,7 @@ PYBIND11_MODULE(libbfiocpp, m) {
     .def("get_tile_depth", &bfiocpp::TsReaderCPP::GetTileDepth) 
     .def("get_channel_count", &bfiocpp::TsReaderCPP::GetChannelCount) 
     .def("get_tstep_count", &bfiocpp::TsReaderCPP::GetTstepCount) 
-    .def("get_datatype", &bfiocpp::TsReaderCPP::GetDataType) 
-    .def("get_ome_xml_metadata", &bfiocpp::TsReaderCPP::GetOmeXml)
+    .def("get_datatype", &bfiocpp::TsReaderCPP::GetDataType)
     .def("get_tile_coordinate",
         [](bfiocpp::TsReaderCPP& tl, std::int64_t y_start, std::int64_t x_start, std::int64_t row_stride, std::int64_t col_stride) { 
             auto row_index = static_cast<std::int64_t>(y_start/row_stride);
@@ -113,4 +114,6 @@ PYBIND11_MODULE(libbfiocpp, m) {
         .value("OmeTiff", bfiocpp::FileType::OmeTiff)
         .value("OmeZarr", bfiocpp::FileType::OmeZarr)
         .export_values();
+    
+    m.def("get_ome_xml", &bfiocpp::GetOmeXml);
 }
