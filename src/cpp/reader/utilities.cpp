@@ -3,6 +3,7 @@
 #include <chrono>
 #include "utilities.h"
 #include <cassert>
+#include <tiffio.h>
 
 namespace bfiocpp {
 tensorstore::Spec GetOmeTiffSpecToRead(const std::string& filename){
@@ -91,4 +92,20 @@ std::tuple<std::optional<int>, std::optional<int>, std::optional<int>>ParseMulti
     }
     return {t_index, c_index, z_index};
 }
+
+
+std::string GetOmeXml(const std::string& file_path){
+    TIFF *tiff_file = TIFFOpen(file_path.c_str(), "r");
+    std::string OmeXmlInfo{""};
+    if (tiff_file != nullptr) {
+        char* infobuf;        
+        TIFFGetField(tiff_file, TIFFTAG_IMAGEDESCRIPTION , &infobuf);
+        if (strlen(infobuf)>0){
+            OmeXmlInfo = std::string(infobuf);
+        }
+        TIFFClose(tiff_file);
+    }
+    return OmeXmlInfo;
+}
+
 } // ns bfiocpp
