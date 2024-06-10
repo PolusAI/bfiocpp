@@ -49,8 +49,15 @@ jobs:
                           bash ci-utils/install_prereq_linux.sh &&
                           mkdir -p /tmp/bfiocpp_bld &&
                           cp -r local_install /tmp/bfiocpp_bld
-          CIBW_BEFORE_ALL_LINUX: curl -L https://rpmfind.net/linux/centos-stream/9-stream/CRB/x86_64/os/Packages/nasm-2.15.03-7.el9.x86_64.rpm -o nasm-2.15.03-7.el9.x86_64.rpm &&
-                                   yum -y install nasm-2.15.03-7.el9.x86_64.rpm &&
+          CIBW_BEFORE_ALL_LINUX: yum -y install wget &&
+                                   wget https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/nasm-2.15.05.tar.xz &&
+                                   tar -xjf nasm-2.15.05.tar.bz2 &&
+                                   cd nasm-2.15.05 &&
+                                   ./configure && 
+                                   make && 
+                                   make install &&
+                                   cd .. 
+                                   yum -y install maven java &&
                                    bash ci-utils/install_prereq_linux.sh &&
                                    mkdir -p /tmp/bfiocpp_bld &&
                                    cp -r local_install /tmp/bfiocpp_bld
