@@ -58,7 +58,7 @@ jobs:
                                    ./configure && 
                                    make && 
                                    make install &&
-                                   cd .. 
+                                   cd .. &&
                                    yum -y install maven java &&
                                    bash ci-utils/install_prereq_linux.sh &&
                                    mkdir -p /tmp/bfiocpp_bld &&
