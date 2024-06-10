@@ -49,9 +49,9 @@ jobs:
                           bash ci-utils/install_prereq_linux.sh &&
                           mkdir -p /tmp/bfiocpp_bld &&
                           cp -r local_install /tmp/bfiocpp_bld
-          CIBW_BEFORE_ALL_LINUX: sudo yum update &&
-                                   sudo yum install epel-release &&
-                                   sudo yum install nasm &&
+          CIBW_BEFORE_ALL_LINUX: yum -y update &&
+                                   yum -y install epel-release &&
+                                   yum -y install nasm &&
                                    yum -y install maven java &&
                                    bash ci-utils/install_prereq_linux.sh &&
                                    mkdir -p /tmp/bfiocpp_bld &&
