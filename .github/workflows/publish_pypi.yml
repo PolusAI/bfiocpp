@@ -51,9 +51,8 @@ jobs:
                           bash ci-utils/install_prereq_linux.sh &&
                           mkdir -p /tmp/bfiocpp_bld &&
                           cp -r local_install /tmp/bfiocpp_bld
-          CIBW_BEFORE_ALL_LINUX: yum -y update &&
-                                   yum -y install epel-release &&
-                                   yum -y install nasm &&
+          CIBW_BEFORE_ALL_LINUX: curl -L https://rpmfind.net/linux/centos-stream/9-stream/CRB/x86_64/os/Packages/nasm-2.15.03-7.el9.x86_64.rpm -o nasm-2.15.03-7.el9.x86_64.rpm &&
+                                   yum -y install nasm-2.15.03-7.el9.x86_64.rpm &&
                                    yum -y install maven java &&
                                    bash ci-utils/install_prereq_linux.sh &&
                                    mkdir -p /tmp/bfiocpp_bld &&
