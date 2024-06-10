@@ -50,7 +50,7 @@ jobs:
                           mkdir -p /tmp/bfiocpp_bld &&
                           cp -r local_install /tmp/bfiocpp_bld
           CIBW_BEFORE_ALL_LINUX: yum -y install wget &&
-                                   wget https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/nasm-2.15.05.tar.xz &&
+                                   wget https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/nasm-2.15.05.tar.bz2 &&
                                    tar -xjf nasm-2.15.05.tar.bz2 &&
                                    cd nasm-2.15.05 &&
                                    ./configure && 
