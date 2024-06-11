@@ -1,27 +1,26 @@
 import numpy as np
 from typing import Tuple
-from .libbfiocpp import OmeTiffReader, Seq  # NOQA: F401
+from .libbfiocpp import TsReaderCPP, Seq, FileType, get_ome_xml  # NOQA: F401
 
 
-class TSTiffReader:
+class TSReader:
 
     READ_ONLY_MESSAGE: str = "{} is read-only."
 
-    def __init__(self, file_name: str) -> None:
-        self._image_reader: OmeTiffReader = OmeTiffReader(file_name)
+    def __init__(self, file_name: str, file_type: FileType, axes_list: str) -> None:
+        self._image_reader: TsReaderCPP = TsReaderCPP(file_name, file_type, axes_list)
         self._Y: int = self._image_reader.get_image_height()
         self._X: int = self._image_reader.get_image_width()
         self._Z: int = self._image_reader.get_image_depth()
         self._C: int = self._image_reader.get_channel_count()
         self._T: int = self._image_reader.get_tstep_count()
+        self._datatype: int = self._image_reader.get_datatype()
+        self._filetype = file_type
 
     def data(
         self, rows: int, cols: int, layers: int, channels: int, tsteps: int
     ) -> np.ndarray:
         return self._image_reader.get_image_data(rows, cols, layers, channels, tsteps)
-
-    def ome_metadata(self) -> str:
-        return self._image_reader.get_ome_xml_metadata()
 
     def send_iter_read_request(
         self, tile_size: Tuple[int, int], tile_stride: Tuple[int, int]
@@ -33,16 +32,10 @@ class TSTiffReader:
     def close(self):
         pass
 
-    def __enter__(self) -> "TSTiffReader":
+    def __enter__(self) -> "TSReader":
         """Handle entrance to a context manager.
 
-        This code is called when a `with` statement is used. This allows a
-        BioBase object to be used like this:
-
-        with bfio.BioReader('Path/To/File.ome.tif') as reader:
-            ...
-
-        with bfio.BioWriter('Path/To/File.ome.tif') as writer:
+        This code is called when a `with` statement is used.
             ...
         """
         return self

@@ -60,11 +60,11 @@ x86/
 [Aa][Rr][Mm]/
 [Aa][Rr][Mm]64/
 bld/
-build/
 [Bb]in/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
+build*/
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
@@ -475,6 +475,7 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
+tests/data
 
 # Translations
 *.mo
@@ -565,6 +566,5 @@ cython_debug/
 # scratch 
 scratch/
 
-build/
-build_man/
 venv/
+.DS_Store

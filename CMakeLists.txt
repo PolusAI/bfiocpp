@@ -23,7 +23,7 @@ set(SOURCE
           src/cpp/ts_driver/ometiff/metadata.cc
           src/cpp/ts_driver/ometiff/driver.cc
           src/cpp/interface/interface.cpp
-          src/cpp/reader/ometiff.cpp
+          src/cpp/reader/tsreader.cpp
           src/cpp/reader/utilities.cpp
 )
 

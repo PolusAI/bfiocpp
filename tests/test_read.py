@@ -1,4 +1,4 @@
-from bfiocpp import TSTiffReader, Seq
+from bfiocpp import TSReader, Seq, FileType
 import unittest
 import requests, pathlib, shutil, logging, sys
 import bfio
@@ -7,6 +7,7 @@ import random
 from ome_zarr.utils import download as zarr_download
 
 TEST_IMAGES = {
+    "5025551.zarr": "https://uk1s3.embassy.ebi.ac.uk/idr/zarr/v0.4/idr0054A/5025551.zarr",
     "p01_x01_y01_wx0_wy0_c1.ome.tif": "https://raw.githubusercontent.com/sameeul/polus-test-data/main/bfio/p01_x01_y01_wx0_wy0_c1.ome.tif",
     "Plate1-Blue-A-12-Scene-3-P3-F2-03.czi": "https://downloads.openmicroscopy.org/images/Zeiss-CZI/idr0011/Plate1-Blue-A_TS-Stinger/Plate1-Blue-A-12-Scene-3-P3-F2-03.czi",
 }
@@ -63,14 +64,18 @@ def tearDownModule():
     """Remove test images"""
 
     logger.info("teardown - Removing test images...")
-    shutil.rmtree(TEST_DIR)
+    # shutil.rmtree(TEST_DIR)
 
 
-class TestSimpleRead(unittest.TestCase):
+class TestOmeTiffRead(unittest.TestCase):
 
     def test_read_ome_tif_full(self):
         """test_read_ome_tif_full - Read tiff using TSTiffReader"""
-        br = TSTiffReader(str(TEST_DIR.joinpath("p01_x01_y01_wx0_wy0_c1.ome.tif")))
+        br = TSReader(
+            str(TEST_DIR.joinpath("p01_x01_y01_wx0_wy0_c1.ome.tif")),
+            FileType.OmeTiff,
+            "",
+        )
         assert br._X == 1080
         assert br._Y == 1080
         assert br._Z == 1
@@ -81,7 +86,7 @@ class TestSimpleRead(unittest.TestCase):
         cols = Seq(0, br._X - 1, 1)
         layers = Seq(0, br._Z - 1, 1)
         channels = Seq(0, br._C - 1, 1)
-        tsteps = Seq(0, br._Z - 1, 1)
+        tsteps = Seq(0, br._T - 1, 1)
         tmp = br.data(rows, cols, layers, channels, tsteps)
 
         assert tmp.dtype == np.uint16
@@ -90,8 +95,10 @@ class TestSimpleRead(unittest.TestCase):
 
     def test_read_ome_tif_partial(self):
         """test_read_ome_tif_partial - Read partial tiff read"""
-        with TSTiffReader(
-            str(TEST_DIR.joinpath("p01_x01_y01_wx0_wy0_c1.ome.tif"))
+        with TSReader(
+            str(TEST_DIR.joinpath("p01_x01_y01_wx0_wy0_c1.ome.tif")),
+            FileType.OmeTiff,
+            "",
         ) as br:
             rows = Seq(0, 1023, 1)
             cols = Seq(0, 1023, 1)
@@ -123,7 +130,9 @@ class TestSimpleRead(unittest.TestCase):
         x_max = source_data.shape[0]
         y_max = source_data.shape[1]
 
-        with TSTiffReader(str(TEST_DIR.joinpath("test_output.ome.tiff"))) as test_br:
+        with TSReader(
+            str(TEST_DIR.joinpath("test_output.ome.tiff")), FileType.OmeTiff, ""
+        ) as test_br:
             for i in range(100):
                 x_start = random.randint(0, x_max)
                 y_start = random.randint(0, y_max)
@@ -159,7 +168,7 @@ class TestSimpleRead(unittest.TestCase):
 
     def test_read_ome_tif_4d(self):
         """test_read_ome_tif_4d - Read 4D data"""
-        br = TSTiffReader(str(TEST_DIR.joinpath("4d_array.ome.tif")))
+        br = TSReader(str(TEST_DIR.joinpath("4d_array.ome.tif")), FileType.OmeTiff, "")
         assert br._X == 672
         assert br._Y == 512
         assert br._Z == 21
@@ -193,3 +202,49 @@ class TestSimpleRead(unittest.TestCase):
 
     def test_read_ome_tif_5d(self):
         pass
+
+
+class TestOmeZarrRead(unittest.TestCase):
+
+    def test_read_zarr_2d_slice(self):
+        """test_read_zarr_2d_slice - Read tiff using TSReader"""
+        br = TSReader(
+            str(TEST_DIR.joinpath("5025551.zarr/0")),
+            FileType.OmeZarr,
+            "",
+        )
+        assert br._X == 2702
+        assert br._Y == 2700
+        assert br._Z == 1
+        assert br._C == 27
+        assert br._T == 1
+
+        rows = Seq(0, br._Y - 1, 1)
+        cols = Seq(0, br._X - 1, 1)
+        layers = Seq(0, 0, 1)
+        channels = Seq(0, 0, 1)
+        tsteps = Seq(0, 0, 1)
+        tmp = br.data(rows, cols, layers, channels, tsteps)
+
+        assert tmp.dtype == np.uint8
+        assert tmp.sum() == 183750394
+        assert tmp.shape == (1, 1, 1, 2700, 2702)
+
+    def test_read_zarr_4d_slice(self):
+        """test_read_zarr_4d_slice - Read tiff using TSReader"""
+        br = TSReader(
+            str(TEST_DIR.joinpath("5025551.zarr/0")),
+            FileType.OmeZarr,
+            "",
+        )
+
+        rows = Seq(0, 1023, 1)
+        cols = Seq(0, 1023, 1)
+        layers = Seq(0, 0, 1)
+        channels = Seq(0, 3, 1)
+        tsteps = Seq(0, 0, 1)
+        tmp = br.data(rows, cols, layers, channels, tsteps)
+
+        assert tmp.dtype == np.uint8
+        assert tmp.sum() == 81778531
+        assert tmp.shape == (1, 4, 1, 1024, 1024)
