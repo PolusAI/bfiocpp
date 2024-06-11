@@ -12,7 +12,7 @@ jobs:
       MACOSX_DEPLOYMENT_TARGET: "10.15"
     strategy:
       matrix:
-        os: [windows-latest]
+        os: [ubuntu-20.04, macos-12, windows-latest]
         cibw_archs: ["auto64"]
         cibw_build: ["cp38-*", "cp39-*", "cp310-*", "cp311-*"]
 
@@ -23,9 +23,8 @@ jobs:
       - uses: ilammy/msvc-dev-cmd@v1
         name: Add MSVS Path
 
-      - name: Add NASM
-        if: matrix.os != 'ubuntu-20.04'
-        uses: ilammy/setup-nasm@v1
+      - uses: ilammy/setup-nasm@v1
+        name: Add NASM
 
       - name: Add Ninja
         if: matrix.os == 'windows-latest'

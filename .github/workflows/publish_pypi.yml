@@ -27,9 +27,8 @@ jobs:
       - uses: ilammy/msvc-dev-cmd@v1
         name: Add MSVS Path
 
-      - name: Add NASM
-        if: matrix.os != 'ubuntu-20.04'
-        uses: ilammy/setup-nasm@v1
+      - uses: ilammy/setup-nasm@v1
+        name: Add NASM
 
       - name: Add Ninja
         if: matrix.os == 'windows-latest'
