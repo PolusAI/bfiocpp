@@ -50,6 +50,7 @@ jobs:
           CIBW_BEFORE_ALL_MACOS: brew install nasm &&
                           bash ci-utils/install_prereq_linux.sh &&
                           mkdir -p /tmp/bfiocpp_bld &&
+                          cp -r local_install /tmp/bfiocpp_bld
           CIBW_BEFORE_ALL_LINUX: yum -y install wget &&
                                    wget https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/nasm-2.15.05.tar.bz2 &&
                                    tar -xjf nasm-2.15.05.tar.bz2 &&
