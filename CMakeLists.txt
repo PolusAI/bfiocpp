@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.24)
-
+set(CMAKE_VERBOSE_MAKEFILE ON)
 project(bfio_cpp)
 #==== Compiler Options
 set(CMAKE_CXX_STANDARD 17)
@@ -14,7 +14,7 @@ endif()
 message(STATUS "CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}")
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
-  endif()
+endif()
   
 set(CMAKE_CXX_FLAGS_RELEASE "-O2")
 set(SOURCE 
