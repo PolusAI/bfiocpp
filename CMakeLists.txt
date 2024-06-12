@@ -7,14 +7,14 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include(GNUInstallDirs)
 # this is a workaround for GitHub Action for wheelbuiling
-if(DEFINED ENV{BFIO_CPP_DEP_DIR})
-	set(CMAKE_PREFIX_PATH $ENV{BFIO_CPP_DEP_DIR})
-	link_directories($ENV{BFIO_CPP_DEP_DIR}/${CMAKE_INSTALL_LIBDIR})
+if(DEFINED ENV{BFIOCPP_DEP_DIR})
+	set(CMAKE_PREFIX_PATH $ENV{BFIOCPP_DEP_DIR})
+	link_directories($ENV{BFIOCPP_DEP_DIR}/${CMAKE_INSTALL_LIBDIR})
 endif()
 message(STATUS "CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}")
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
-  endif()
+endif()
   
 set(CMAKE_CXX_FLAGS_RELEASE "-O2")
 set(SOURCE 
