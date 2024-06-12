@@ -60,7 +60,6 @@ jobs:
                                    make && 
                                    make install &&
                                    cd .. &&
-                                   yum -y install maven java &&
                                    bash ci-utils/install_prereq_linux.sh &&
                                    mkdir -p /tmp/bfiocpp_bld &&
                                    cp -r local_install /tmp/bfiocpp_bld
@@ -74,6 +73,14 @@ jobs:
           CIBW_ARCHS: ${{ matrix.cibw_archs }}
           CIBW_TEST_REQUIRES: bfio requests numpy ome_zarr
           CIBW_TEST_COMMAND: python -W default -m unittest discover -s {project}/tests -v
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: bfiocpp-wheels
+          path: dist/*.whl
+          retention-days: 1
+
 
   build_wheels_apple_arm64:
     name: Build wheels on ${{ matrix.os }}
@@ -122,6 +129,6 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: bfiocpp-wheels
+          name: bfiocpp-wheels-arm64
           path: dist/*.whl
           retention-days: 1
