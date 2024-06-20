@@ -65,7 +65,7 @@ jobs:
           CIBW_ENVIRONMENT_WINDOWS: PATH="$TEMP\\bfiocpp\\bin;$PATH" ON_GITHUB="TRUE" BFIO_CPP_DEP_DIR="C:\\TEMP\\bfiocpp_bld\\local_install"
           CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -w {dest_dir} {wheel}"
           CIBW_ARCHS: ${{ matrix.cibw_archs }}
-          CIBW_TEST_REQUIRES: bfio requests numpy ome_zarr
+          CIBW_TEST_REQUIRES: bfio requests numpy ome_zarr zarr
           CIBW_TEST_COMMAND: python -W default -m unittest discover -s {project}/tests -v
 
       - name: Install Dependencies
