@@ -109,4 +109,7 @@ setup(
     install_requires=[
         "numpy",
     ],
+    tests_require=[
+        "zarr",
+    ],    
 )
