@@ -4,6 +4,7 @@
 #include "utilities.h"
 #include <cassert>
 #include <tiffio.h>
+#include <thread>
 
 namespace bfiocpp {
 tensorstore::Spec GetOmeTiffSpecToRead(const std::string& filename){
@@ -27,7 +28,6 @@ tensorstore::Spec GetZarrSpecToRead(const std::string& filename){
                             }
                             }).value();
 }
-
 
 
 uint16_t GetDataTypeCode (std::string_view type_name){
@@ -106,6 +106,55 @@ std::string GetOmeXml(const std::string& file_path){
         TIFFClose(tiff_file);
     }
     return OmeXmlInfo;
+}
+
+tensorstore::Spec GetZarrSpecToWrite(   const std::string& filename, 
+                                        const std::vector<std::int64_t>& image_shape, 
+                                        const std::vector<std::int64_t>& chunk_shape,
+                                        const std::string& dtype){
+    return tensorstore::Spec::FromJson({{"driver", "zarr"},
+                            {"kvstore", {{"driver", "file"},
+                                         {"path", filename}}
+                            },
+                            {"context", {
+                              {"cache_pool", {{"total_bytes_limit", 1000000000}}},
+                              {"data_copy_concurrency", {{"limit", std::thread::hardware_concurrency()}}},
+                              {"file_io_concurrency", {{"limit", std::thread::hardware_concurrency()}}},
+                            }},
+                            {"metadata", {
+                                          {"zarr_format", 2},
+                                          {"shape", image_shape},
+                                          {"chunks", chunk_shape},
+                                          {"dtype", dtype},
+                                          },
+                            }}).value();
+                                        }
+
+// Function to get the TensorStore DataType based on a string identifier
+tensorstore::DataType GetTensorStoreDataType(const std::string& type_str) {
+    if (type_str == "uint8") {
+        return tensorstore::dtype_v<std::uint8_t>;
+    } else if (type_str == "uint16") {
+        return tensorstore::dtype_v<std::uint16_t>;
+    } else if (type_str == "uint32") {
+        return tensorstore::dtype_v<std::uint32_t>;
+    } else if (type_str == "uint64") {
+        return tensorstore::dtype_v<std::uint64_t>;
+    } else if (type_str == "int8") {
+        return tensorstore::dtype_v<std::int8_t>;
+    } else if (type_str == "int16") {
+        return tensorstore::dtype_v<std::int16_t>;
+    } else if (type_str == "int32") {
+        return tensorstore::dtype_v<std::int32_t>;
+    } else if (type_str == "int64") {
+        return tensorstore::dtype_v<std::int64_t>;
+    } else if (type_str == "float") {
+        return tensorstore::dtype_v<float>;
+    } else if (type_str == "double" || type_str == "float64") { // handle float64 from numpy
+        return tensorstore::dtype_v<double>;
+    } else {
+        throw std::invalid_argument("Unknown data type string: " + type_str);
+    }
 }
 
 } // ns bfiocpp
