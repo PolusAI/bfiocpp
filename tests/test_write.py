@@ -2,9 +2,11 @@ import unittest
 import tempfile
 import os
 import numpy as np
+import pathlib
 
 from bfiocpp import TSWriter, TSReader, Seq, FileType
-from . import TEST_DIR
+
+TEST_DIR = pathlib.Path(__file__).with_name("data")
 
 class TestZarrWrite(unittest.TestCase):
 

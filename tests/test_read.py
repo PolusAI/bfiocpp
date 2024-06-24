@@ -3,8 +3,9 @@ import unittest
 import bfio
 import numpy as np
 import random
+import pathlib
 
-from . import TEST_DIR
+TEST_DIR = pathlib.Path(__file__).with_name("data")
 
 class TestOmeTiffRead(unittest.TestCase):
 
