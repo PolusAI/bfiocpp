@@ -5,7 +5,7 @@ from .libbfiocpp import TsWriterCPP
 class TSWriter:
 
     def __init__(self, file_name: str):
-        """ Initialize tensorstore Zarr writer
+        """Initialize tensorstore Zarr writer
 
         file_name: Path to write file to
         """
@@ -13,12 +13,12 @@ class TSWriter:
         self._image_writer: TsWriterCPP = TsWriterCPP(file_name)
 
     def write_image(self, image_data: np.ndarray, image_shape: list, chunk_shape: list):
-        """ Write image data to file
+        """Write image data to file
 
         image_data: 5d numpy array containing image data
         """
 
-        if (not isinstance(image_data, np.ndarray)):
+        if not isinstance(image_data, np.ndarray):
 
             raise ValueError("Image data must be a 5d numpy array")
 
