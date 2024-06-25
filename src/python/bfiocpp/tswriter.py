@@ -4,13 +4,17 @@ from .libbfiocpp import TsWriterCPP
 
 class TSWriter:
 
-    def __init__(self, file_name: str, image_shape: list, chunk_shape: list, dtype: np.dtype):
+    def __init__(
+        self, file_name: str, image_shape: list, chunk_shape: list, dtype: np.dtype
+    ):
         """Initialize tensorstore Zarr writer
 
         file_name: Path to write file to
         """
-        
-        self._image_writer: TsWriterCPP = TsWriterCPP(file_name, image_shape, chunk_shape, str(dtype))
+
+        self._image_writer: TsWriterCPP = TsWriterCPP(
+            file_name, image_shape, chunk_shape, str(dtype)
+        )
 
     def write_image(self, image_data: np.ndarray):
         """Write image data to file
