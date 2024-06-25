@@ -1,12 +1,54 @@
+from bfiocpp import TSReader, TSWriter, Seq, FileType
 import unittest
-import tempfile
-import os
+import requests, pathlib, shutil, logging, sys
+import bfio
 import numpy as np
-import pathlib
+import tempfile, os
+from ome_zarr.utils import download as zarr_download
 
-from bfiocpp import TSWriter, TSReader, Seq, FileType
+TEST_IMAGES = {
+    "5025551.zarr": "https://uk1s3.embassy.ebi.ac.uk/idr/zarr/v0.4/idr0054A/5025551.zarr",
+}
 
 TEST_DIR = pathlib.Path(__file__).with_name("data")
+
+logging.basicConfig(
+    format="%(asctime)s - %(name)-8s - %(levelname)-8s - %(message)s",
+    datefmt="%d-%b-%y %H:%M:%S",
+)
+logger = logging.getLogger("bfio.test")
+
+if "-v" in sys.argv:
+    logger.setLevel(logging.INFO)
+
+
+def setUpModule():
+    """Download images for testing"""
+    TEST_DIR.mkdir(exist_ok=True)
+
+    for file, url in TEST_IMAGES.items():
+        logger.info(f"setup - Downloading: {file}")
+
+        if not file.endswith(".zarr"):
+            if TEST_DIR.joinpath(file).exists():
+                continue
+
+            r = requests.get(url)
+
+            with open(TEST_DIR.joinpath(file), "wb") as fw:
+                fw.write(r.content)
+        else:
+            if TEST_DIR.joinpath(file).exists():
+                shutil.rmtree(TEST_DIR.joinpath(file))
+            zarr_download(url, str(TEST_DIR))
+
+
+def tearDownModule():
+    """Remove test images"""
+
+    logger.info("teardown - Removing test images...")
+    shutil.rmtree(TEST_DIR)
+
 
 class TestZarrWrite(unittest.TestCase):
 
@@ -31,9 +73,9 @@ class TestZarrWrite(unittest.TestCase):
         tsteps = Seq(0, 0, 1)
         tmp = br.data(rows, cols, layers, channels, tsteps)
 
-        with tempfile.TemporaryDirectory() as test_dir:
+        with tempfile.TemporaryDirectory() as dir:
             # Use the temporary directory
-            test_file_path = os.path.join(test_dir, 'out/test.ome.zarr')
+            test_file_path = os.path.join(dir, 'out/test.ome.zarr')
 
             bw = TSWriter(test_file_path)
             bw.write_image(tmp, tmp.shape, tmp.shape)
