@@ -24,7 +24,8 @@ set(SOURCE
           src/cpp/ts_driver/ometiff/driver.cc
           src/cpp/interface/interface.cpp
           src/cpp/reader/tsreader.cpp
-          src/cpp/reader/utilities.cpp
+          src/cpp/utilities/utilities.cpp
+          src/cpp/writer/tswriter.cpp
 )
 
 include(FetchContent)

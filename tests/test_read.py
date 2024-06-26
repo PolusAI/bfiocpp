@@ -59,12 +59,11 @@ def setUpModule():
         ) as bw:
             bw[:] = br[:]
 
-
 def tearDownModule():
     """Remove test images"""
 
     logger.info("teardown - Removing test images...")
-    # shutil.rmtree(TEST_DIR)
+    shutil.rmtree(TEST_DIR)
 
 
 class TestOmeTiffRead(unittest.TestCase):
