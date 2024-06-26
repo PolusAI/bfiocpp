@@ -15,6 +15,7 @@ tensorstore::Spec GetOmeTiffSpecToRead(const std::string& filename);
 tensorstore::Spec GetZarrSpecToRead(const std::string& filename);
 
 uint16_t GetDataTypeCode (std::string_view type_name);
+std::string GetEncodedType(uint16_t data_type_code);
 std::string GetUTCString();
 std::string GetOmeXml(const std::string& file_path);
 std::tuple<std::optional<int>, std::optional<int>, std::optional<int>>ParseMultiscaleMetadata(const std::string& axes_list, int len);

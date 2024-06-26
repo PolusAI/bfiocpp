@@ -1,10 +1,14 @@
 #include <iomanip>
 #include <ctime>
-#include <chrono>
 #include "utilities.h"
 #include <cassert>
 #include <tiffio.h>
 #include <thread>
+
+#include "tensorstore/driver/zarr/dtype.h"
+
+
+using ::tensorstore::internal_zarr::ChooseBaseDType;
 
 namespace bfiocpp {
 tensorstore::Spec GetOmeTiffSpecToRead(const std::string& filename){
@@ -44,6 +48,45 @@ uint16_t GetDataTypeCode (std::string_view type_name){
   else if (type_name == std::string_view{"float64"}) {return 512;}
   else if (type_name == std::string_view{"double"}) {return 512;}
   else {return 2;}
+}
+
+std::string GetEncodedType(uint16_t data_type_code){
+    switch (data_type_code)
+    {
+    case 1:
+        return ChooseBaseDType(tensorstore::dtype_v<std::uint8_t>).value().encoded_dtype;
+        break;
+    case 2:
+        return ChooseBaseDType(tensorstore::dtype_v<std::uint16_t>).value().encoded_dtype;
+        break;
+    case 4:
+        return ChooseBaseDType(tensorstore::dtype_v<std::uint32_t>).value().encoded_dtype;
+        break;
+    case 8:
+        return ChooseBaseDType(tensorstore::dtype_v<std::uint16_t>).value().encoded_dtype;
+        break;
+    case 16:
+        return ChooseBaseDType(tensorstore::dtype_v<std::int8_t>).value().encoded_dtype;
+        break;
+    case 32:
+        return ChooseBaseDType(tensorstore::dtype_v<std::int16_t>).value().encoded_dtype;
+        break;
+    case 64:
+        return ChooseBaseDType(tensorstore::dtype_v<std::int32_t>).value().encoded_dtype;
+        break;
+    case 128:
+        return ChooseBaseDType(tensorstore::dtype_v<std::int64_t>).value().encoded_dtype;
+        break;
+    case 256:
+        return ChooseBaseDType(tensorstore::dtype_v<float>).value().encoded_dtype;
+        break;
+    case 512:
+        return ChooseBaseDType(tensorstore::dtype_v<double>).value().encoded_dtype;
+        break;
+    default:
+        return ChooseBaseDType(tensorstore::dtype_v<std::uint16_t>).value().encoded_dtype;
+        break;
+    }
 }
 
 std::string GetUTCString() {

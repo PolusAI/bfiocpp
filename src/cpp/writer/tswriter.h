@@ -1,25 +1,9 @@
 #pragma once
 
 #include <string>
-#include <memory>
 #include <vector>
-#include <variant>
-#include <iostream>
-#include <tuple>
-#include <optional>
-#include <unordered_map>
-#include "../reader/sequence.h"
-
 #include "tensorstore/tensorstore.h"
-#include "tensorstore/context.h"
-#include "tensorstore/array.h"
-#include "tensorstore/driver/zarr/dtype.h"
-#include "tensorstore/index_space/dim_expression.h"
-#include "tensorstore/kvstore/kvstore.h"
-#include "tensorstore/open.h"
-
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
+#include "../reader/sequence.h"
 #include <pybind11/numpy.h>
 
 namespace py = pybind11;
