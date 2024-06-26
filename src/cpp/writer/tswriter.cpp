@@ -28,7 +28,7 @@ TsWriterCPP::TsWriterCPP(
 }
 
 
-void TsWriterCPP::WriteImage(py::array& py_image) {
+void TsWriterCPP::WriteImageData(py::array& py_image) {
 
   // use switch instead of template to avoid creating functions for each datatype
   switch(_dtype_code)
