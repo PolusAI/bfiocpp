@@ -78,7 +78,7 @@ class TestZarrWrite(unittest.TestCase):
             test_file_path = os.path.join(dir, 'out/test.ome.zarr')
 
             bw = TSWriter(test_file_path, tmp.shape, tmp.shape, str(tmp.dtype))
-            bw.write_image(tmp)
+            bw.write_image_data(tmp)
             bw.close()
 
             br = TSReader(
