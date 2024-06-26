@@ -30,7 +30,7 @@ class TsWriterCPP{
 public:
     TsWriterCPP(const std::string& fname, const std::vector<std::int64_t>& image_shape, const std::vector<std::int64_t>& chunk_shape, const std::string& dtype);
 
-    void write_image(py::array& py_image);
+    void WriteImageData(py::array& py_image);
 
 private:
     std::string _filename;

@@ -18,7 +18,6 @@ uint16_t GetDataTypeCode (std::string_view type_name);
 std::string GetUTCString();
 std::string GetOmeXml(const std::string& file_path);
 std::tuple<std::optional<int>, std::optional<int>, std::optional<int>>ParseMultiscaleMetadata(const std::string& axes_list, int len);
-tensorstore::DataType GetTensorStoreDataType(const std::string& type_str);
 tensorstore::Spec GetZarrSpecToWrite(const std::string& filename, 
                                     const std::vector<std::int64_t>& image_shape, 
                                     const std::vector<std::int64_t>& chunk_shape,

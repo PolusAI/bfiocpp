@@ -123,5 +123,5 @@ PYBIND11_MODULE(libbfiocpp, m) {
     // Writer class
     py::class_<bfiocpp::TsWriterCPP, std::shared_ptr<bfiocpp::TsWriterCPP>>(m, "TsWriterCPP") 
     .def(py::init<const std::string&, const std::vector<std::int64_t>&, const std::vector<std::int64_t>&, const std::string&>())
-    .def("write", &bfiocpp::TsWriterCPP::write_image);
+    .def("write_image_data", &bfiocpp::TsWriterCPP::WriteImageData);
 }
