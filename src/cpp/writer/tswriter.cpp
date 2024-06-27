@@ -1,11 +1,11 @@
-#include "tswriter.h"
-
-#include "../utilities/utilities.h"
-
-#include <variant>
 #include <string>
 
-using ::tensorstore::internal_zarr::ChooseBaseDType;
+#include "tensorstore/array.h"
+#include "tensorstore/open.h"
+
+#include "tswriter.h"
+#include "../utilities/utilities.h"
+
 
 namespace bfiocpp {
 
@@ -14,27 +14,20 @@ TsWriterCPP::TsWriterCPP(
     const std::vector<std::int64_t>& image_shape, 
     const std::vector<std::int64_t>& chunk_shape,
     const std::string& dtype_str
-  ): _filename(fname), _image_shape(image_shape), _chunk_shape(chunk_shape) {
-  
-  _dtype_code = GetDataTypeCode(dtype_str); 
-
-  std::string dtype_str_converted = (dtype_str == "float64") ? "double" : dtype_str; // change float64 numpy type to double
-  
-  auto dtype = GetTensorStoreDataType(dtype_str_converted);
-
-  auto dtype_base = ChooseBaseDType(dtype).value().encoded_dtype;
-
-  auto spec = GetZarrSpecToWrite(_filename, image_shape, chunk_shape, dtype_base);
-
+  ): _filename(fname), 
+     _image_shape(image_shape), 
+     _chunk_shape(chunk_shape),  
+     _dtype_code(GetDataTypeCode(dtype_str)) {
+ 
   TENSORSTORE_CHECK_OK_AND_ASSIGN(_source, tensorstore::Open(
-                            spec,
+                            GetZarrSpecToWrite(_filename, _image_shape, _chunk_shape, GetEncodedType(_dtype_code)),
                             tensorstore::OpenMode::create |
                             tensorstore::OpenMode::delete_existing,
                             tensorstore::ReadWriteMode::write).result());
 }
 
 
-void TsWriterCPP::write_image(py::array& py_image) {
+void TsWriterCPP::WriteImageData(py::array& py_image) {
 
   // use switch instead of template to avoid creating functions for each datatype
   switch(_dtype_code)
