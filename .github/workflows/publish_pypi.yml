@@ -74,7 +74,7 @@ jobs:
           CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -w {dest_dir} {wheel}"
           CIBW_ARCHS: ${{ matrix.cibw_archs }}
           CIBW_BEFORE_TEST_LINUX: yum -y install maven java
-          CIBW_TEST_REQUIRES: bfio requests numpy==1.24.0 ome_zarr
+          CIBW_TEST_REQUIRES: bfio requests numpy ome_zarr
           CIBW_TEST_COMMAND: python -W default -m unittest discover -s {project}/tests -v
 
       - name: Install Dependencies
@@ -128,7 +128,7 @@ jobs:
           CIBW_ENVIRONMENT_MACOS: REPAIR_LIBRARY_PATH="/tmp/bfiocpp_bld/local_install/lib:/tmp/bfiocpp_bld/local_install/lib64" ON_GITHUB="TRUE" BFIOCPP_DEP_DIR="/tmp/bfiocpp_bld/local_install" CMAKE_ARGS="-DTENSORSTORE_USE_SYSTEM_JPEG=ON"
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-listdeps {wheel} && DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-wheel --require-archs {delocate_archs} -w {dest_dir} {wheel}
           CIBW_ARCHS: ${{ matrix.cibw_archs }}
-          CIBW_TEST_REQUIRES: bfio requests numpy==1.24.0 ome_zarr
+          CIBW_TEST_REQUIRES: bfio requests numpy ome_zarr
           CIBW_TEST_COMMAND: python -W default -m unittest discover -s {project}/tests -v
 
       - name: Install Dependencies
