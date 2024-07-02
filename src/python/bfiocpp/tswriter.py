@@ -16,7 +16,7 @@ class TSWriter:
             file_name, image_shape, chunk_shape, str(dtype)
         )
 
-    def write_image_data(self, image_data: np.ndarray):
+    def write_image_data(self, image_data: np.ndarray,  rows: int, cols: int, layers: int, channels: int, tsteps: int):
         """Write image data to file
 
         image_data: 5d numpy array containing image data
@@ -27,7 +27,7 @@ class TSWriter:
             raise ValueError("Image data must be a 5d numpy array")
 
         try:
-            self._image_writer.write_image_data(image_data.flatten())
+            self._image_writer.write_image_data(image_data.flatten(), rows, cols, layers, channels, tsteps)
 
         except Exception as e:
             raise RuntimeError(f"Error writing image data: {e.what}")

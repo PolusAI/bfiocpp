@@ -77,8 +77,14 @@ class TestZarrWrite(unittest.TestCase):
             # Use the temporary directory
             test_file_path = os.path.join(dir, 'out/test.ome.zarr')
 
+            rows = Seq(0, br._Y - 1, 1)
+            cols = Seq(0, br._X - 1, 1)
+            layers = Seq(0, 0, 1)
+            channels = Seq(0, 0, 1)
+            tsteps = Seq(0, 0, 1)
+
             bw = TSWriter(test_file_path, tmp.shape, tmp.shape, str(tmp.dtype))
-            bw.write_image_data(tmp)
+            bw.write_image_data(tmp, rows, cols, layers, channels, tsteps)
             bw.close()
 
             br = TSReader(
@@ -87,11 +93,6 @@ class TestZarrWrite(unittest.TestCase):
                 "",
             )
 
-            rows = Seq(0, br._Y - 1, 1)
-            cols = Seq(0, br._X - 1, 1)
-            layers = Seq(0, 0, 1)
-            channels = Seq(0, 0, 1)
-            tsteps = Seq(0, 0, 1)
             tmp = br.data(rows, cols, layers, channels, tsteps)
 
             assert tmp.dtype == np.uint8
