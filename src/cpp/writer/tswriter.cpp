@@ -38,13 +38,7 @@ void TsWriterCPP::WriteImageData(
     const Seq& channels, 
     const Seq& tsteps) {
 
-    tensorstore::IndexTransform<> output_transform = tensorstore::IdentityTransform(_source.domain());
-
-    output_transform = (std::move(output_transform) | tensorstore::Dims(_t_index).ClosedInterval(tsteps.Start(), tsteps.Stop())).value();
-    output_transform = (std::move(output_transform) | tensorstore::Dims(_c_index).ClosedInterval(channels.Start(), channels.Stop())).value();
-    output_transform = (std::move(output_transform) | tensorstore::Dims(_z_index).ClosedInterval(layers.Start(), layers.Stop())).value();
-    output_transform = (std::move(output_transform) | tensorstore::Dims(_y_index).ClosedInterval(rows.Start(), rows.Stop()) |
-                                                      tensorstore::Dims(_x_index).ClosedInterval(cols.Start(), cols.Stop())).value(); 
+    SetOutputTransform(rows, cols, layers, channels, tsteps);
 
     // use switch instead of template to avoid creating functions for each datatype
     switch(_dtype_code)
@@ -53,7 +47,7 @@ void TsWriterCPP::WriteImageData(
             auto data_array = tensorstore::Array(py_image.mutable_unchecked<std::uint8_t, 1>().data(0), _image_shape, tensorstore::c_order);
 
             // Write data array to TensorStore
-            auto write_result = tensorstore::Write(tensorstore::UnownedToShared(data_array), _source | output_transform).result();
+            auto write_result = tensorstore::Write(tensorstore::UnownedToShared(data_array), _source | output_transform_).result();
 
             if (!write_result.ok()) {
                 std::cerr << "Error writing image: " << write_result.status() << std::endl;
@@ -64,7 +58,7 @@ void TsWriterCPP::WriteImageData(
         case (2): {
             auto data_array = tensorstore::Array(py_image.mutable_unchecked<std::uint16_t, 1>().data(0), _image_shape, tensorstore::c_order);
 
-            auto write_result = tensorstore::Write(tensorstore::UnownedToShared(data_array), _source | output_transform).result();
+            auto write_result = tensorstore::Write(tensorstore::UnownedToShared(data_array), _source | output_transform_).result();
             if (!write_result.ok()) {
                 std::cerr << "Error writing image: " << write_result.status() << std::endl;
             }
@@ -73,7 +67,7 @@ void TsWriterCPP::WriteImageData(
         case (4): {
             auto data_array = tensorstore::Array(py_image.mutable_unchecked<std::uint32_t, 1>().data(0), _image_shape, tensorstore::c_order);
 
-            auto write_result = tensorstore::Write(tensorstore::UnownedToShared(data_array), _source | output_transform).result();
+            auto write_result = tensorstore::Write(tensorstore::UnownedToShared(data_array), _source | output_transform_).result();
             if (!write_result.ok()) {
                 std::cerr << "Error writing image: " << write_result.status() << std::endl;
             }
@@ -82,7 +76,7 @@ void TsWriterCPP::WriteImageData(
         case (8): {
             auto data_array = tensorstore::Array(py_image.mutable_unchecked<std::uint64_t, 1>().data(0), _image_shape, tensorstore::c_order);
 
-            auto write_result = tensorstore::Write(tensorstore::UnownedToShared(data_array), _source | output_transform).result();
+            auto write_result = tensorstore::Write(tensorstore::UnownedToShared(data_array), _source | output_transform_).result();
             if (!write_result.ok()) {
                 std::cerr << "Error writing image: " << write_result.status() << std::endl;
             }
@@ -91,7 +85,7 @@ void TsWriterCPP::WriteImageData(
         case (16): {
             auto data_array = tensorstore::Array(py_image.mutable_unchecked<std::int8_t, 1>().data(0), _image_shape, tensorstore::c_order);
 
-            auto write_result = tensorstore::Write(tensorstore::UnownedToShared(data_array), _source | output_transform).result();
+            auto write_result = tensorstore::Write(tensorstore::UnownedToShared(data_array), _source | output_transform_).result();
             if (!write_result.ok()) {
                 std::cerr << "Error writing image: " << write_result.status() << std::endl;
             }
@@ -100,7 +94,7 @@ void TsWriterCPP::WriteImageData(
         case (32): {
             auto data_array = tensorstore::Array(py_image.mutable_unchecked<std::int16_t, 1>().data(0), _image_shape, tensorstore::c_order);
 
-            auto write_result = tensorstore::Write(tensorstore::UnownedToShared(data_array), _source | output_transform).result();
+            auto write_result = tensorstore::Write(tensorstore::UnownedToShared(data_array), _source | output_transform_).result();
             if (!write_result.ok()) {
                 std::cerr << "Error writing image: " << write_result.status() << std::endl;
             }
@@ -109,7 +103,7 @@ void TsWriterCPP::WriteImageData(
         case (64): {
             auto data_array = tensorstore::Array(py_image.mutable_unchecked<std::int32_t, 1>().data(0), _image_shape, tensorstore::c_order);
 
-            auto write_result = tensorstore::Write(tensorstore::UnownedToShared(data_array), _source | output_transform).result();
+            auto write_result = tensorstore::Write(tensorstore::UnownedToShared(data_array), _source | output_transform_).result();
             if (!write_result.ok()) {
                 std::cerr << "Error writing image: " << write_result.status() << std::endl;
             }
@@ -119,7 +113,7 @@ void TsWriterCPP::WriteImageData(
             auto data_array = tensorstore::Array(py_image.mutable_unchecked<std::int64_t, 1>().data(0), _image_shape, tensorstore::c_order);
 
             // Write data array to TensorStore
-            auto write_result = tensorstore::Write(tensorstore::UnownedToShared(data_array), _source | output_transform).result();
+            auto write_result = tensorstore::Write(tensorstore::UnownedToShared(data_array), _source | output_transform_).result();
             if (!write_result.ok()) {
                 std::cerr << "Error writing image: " << write_result.status() << std::endl;
             }
@@ -128,7 +122,7 @@ void TsWriterCPP::WriteImageData(
         case (256): {
             auto data_array = tensorstore::Array(py_image.mutable_unchecked<float, 1>().data(0), _image_shape, tensorstore::c_order);
 
-            auto write_result = tensorstore::Write(tensorstore::UnownedToShared(data_array), _source | output_transform).result();
+            auto write_result = tensorstore::Write(tensorstore::UnownedToShared(data_array), _source | output_transform_).result();
             if (!write_result.ok()) {
                 std::cerr << "Error writing image: " << write_result.status() << std::endl;
             }
@@ -137,7 +131,7 @@ void TsWriterCPP::WriteImageData(
         case (512): {
             auto data_array = tensorstore::Array(py_image.mutable_unchecked<double, 1>().data(0), _image_shape, tensorstore::c_order);
 
-            auto write_result = tensorstore::Write(tensorstore::UnownedToShared(data_array), _source | output_transform).result();
+            auto write_result = tensorstore::Write(tensorstore::UnownedToShared(data_array), _source | output_transform_).result();
             if (!write_result.ok()) {
                 std::cerr << "Error writing image: " << write_result.status() << std::endl;
             }
@@ -146,7 +140,52 @@ void TsWriterCPP::WriteImageData(
         default: {
             // should not be reached
             std::cerr << "Error writing image: unsupported data type" << std::endl;
-        }
+        }  
     }
-  }
-} 
+}
+
+void TsWriterCPP::SetOutputTransform(
+        const Seq& rows, 
+        const Seq& cols, 
+        const Seq& layers, 
+        const Seq& channels, 
+        const Seq& tsteps
+) {
+
+    output_transform_ = tensorstore::IdentityTransform(_source.domain());
+
+    int z_index=0,
+        c_index=1,         t_index=2,
+        y_index=3,
+        x_index=4;
+
+    if (layers.IsValidDimension()) {
+        output_transform_ = (std::move(output_transform_) | tensorstore::Dims(z_index).ClosedInterval(layers.Start(), layers.Stop())).value();
+    } else {
+        --c_index;
+        --t_index;
+        --y_index;
+        --x_index;
+    }
+
+    if (channels.IsValidDimension()) {
+        output_transform_ = (std::move(output_transform_) | tensorstore::Dims(c_index).ClosedInterval(channels.Start(), channels.Stop())).value();
+    } else {
+        --t_index;
+        --y_index;
+        --x_index;
+    }
+
+    if (tsteps.IsValidDimension()) {
+        output_transform_ = (std::move(output_transform_) | tensorstore::Dims(t_index).ClosedInterval(tsteps.Start(), tsteps.Stop())).value();
+    } else {
+        --y_index;
+        --x_index;
+    }
+
+    output_transform_ = (std::move(output_transform_) | tensorstore::Dims(y_index).ClosedInterval(rows.Start(), rows.Stop()) |
+                                                        tensorstore::Dims(x_index).ClosedInterval(cols.Start(), cols.Stop())).value(); 
+}
+
+
+} // end ns bfiocpp
