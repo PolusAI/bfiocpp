@@ -4,7 +4,7 @@
 #include <pybind11/numpy.h>
 #include <tuple>
 #include "../reader/tsreader.h"
-#include "../reader/sequence.h"
+#include "../utilities/sequence.h"
 #include "../utilities/utilities.h"
 #include "../writer/tswriter.h"
 
@@ -71,7 +71,8 @@ py::array get_iterator_requested_tile_data(bfiocpp::TsReaderCPP& tl,  std::int64
 
 PYBIND11_MODULE(libbfiocpp, m) {
     py::class_<Seq, std::shared_ptr<Seq>>(m, "Seq")  
-        .def(py::init<const size_t, const size_t, const size_t>());
+        .def(py::init<const size_t, const size_t, const size_t>())
+        .def("set_valid_dimension", &bfiocpp::Seq::SetValidDimension);
     
     py::class_<bfiocpp::TsReaderCPP, std::shared_ptr<bfiocpp::TsReaderCPP>>(m, "TsReaderCPP") 
     .def(py::init<const std::string &, bfiocpp::FileType, const std::string &>()) 

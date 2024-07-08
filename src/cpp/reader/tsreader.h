@@ -9,7 +9,7 @@
 #include <optional>
 #include <unordered_map>
 #include "tensorstore/tensorstore.h"
-#include "sequence.h"
+#include "../utilities/sequence.h"
 using image_data = std::variant<std::vector<std::uint8_t>,
                                 std::vector<std::uint16_t>, 
                                 std::vector<std::uint32_t>, 
@@ -58,7 +58,9 @@ private:
                     _num_tsteps;
     std::uint16_t _data_type_code;
     FileType _file_type;
+
     std::optional<int>_z_index, _c_index, _t_index;
+    int _x_index, _y_index;
 
     tensorstore::TensorStore<void, -1, tensorstore::ReadWriteMode::dynamic> source;
 
