@@ -60,7 +60,6 @@ private:
     FileType _file_type;
 
     std::optional<int>_z_index, _c_index, _t_index;
-    int _x_index, _y_index;
 
     tensorstore::TensorStore<void, -1, tensorstore::ReadWriteMode::dynamic> source;
 
