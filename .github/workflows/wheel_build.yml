@@ -52,17 +52,20 @@ jobs:
                           bash ci-utils/install_prereq_linux.sh &&
                           mkdir -p /tmp/bfiocpp_bld &&
                           cp -r local_install /tmp/bfiocpp_bld
-          CIBW_BEFORE_ALL_LINUX: yum -y install wget &&
-                                   wget https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/nasm-2.15.05.tar.bz2 &&
-                                   tar -xjf nasm-2.15.05.tar.bz2 &&
-                                   cd nasm-2.15.05 &&
-                                   ./configure && 
-                                   make && 
-                                   make install &&
-                                   cd .. &&
-                                   bash ci-utils/install_prereq_linux.sh &&
-                                   mkdir -p /tmp/bfiocpp_bld &&
-                                   cp -r local_install /tmp/bfiocpp_bld
+         CIBW_BEFORE_ALL_LINUX: sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo &&
+                                sed -i s/^#.*baseurl=http/baseurl=http/g /etc/yum.repos.d/*.repo &&
+                                sed -i s/^mirrorlist=http/#mirrorlist=http/g /etc/yum.repos.d/*.repo && 
+                                yum -y install wget && yum -y install wget &&
+                                wget https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/nasm-2.15.05.tar.bz2 &&
+                                tar -xjf nasm-2.15.05.tar.bz2 &&
+                                cd nasm-2.15.05 &&
+                                ./configure && 
+                                make && 
+                                make install &&
+                                cd .. &&
+                                bash ci-utils/install_prereq_linux.sh &&
+                                mkdir -p /tmp/bfiocpp_bld &&
+                                cp -r local_install /tmp/bfiocpp_bld
           CIBW_BEFORE_ALL_WINDOWS: ci-utils\install_prereq_win.bat &&
                                    xcopy /E /I /y local_install C:\TEMP\bfiocpp_bld\local_install 
           CIBW_ENVIRONMENT_MACOS: REPAIR_LIBRARY_PATH="/tmp/bfiocpp_bld/local_install/lib:/tmp/bfiocpp_bld/local_install/lib64" ON_GITHUB="TRUE" BFIOCPP_DEP_DIR="/tmp/bfiocpp_bld/local_install"
