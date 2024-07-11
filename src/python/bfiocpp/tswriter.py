@@ -5,7 +5,7 @@ from .libbfiocpp import TsWriterCPP
 class TSWriter:
 
     def __init__(
-        self, file_name: str, image_shape: list, chunk_shape: list, dtype: np.dtype
+        self, file_name: str, image_shape: list, chunk_shape: list, dtype: np.dtype, dimension_order: str,
     ):
         """Initialize tensorstore Zarr writer
 
@@ -13,7 +13,7 @@ class TSWriter:
         """
 
         self._image_writer: TsWriterCPP = TsWriterCPP(
-            file_name, image_shape, chunk_shape, str(dtype)
+            file_name, image_shape, chunk_shape, str(dtype), dimension_order
         )
 
     def write_image_data(

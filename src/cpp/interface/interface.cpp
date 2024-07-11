@@ -71,8 +71,7 @@ py::array get_iterator_requested_tile_data(bfiocpp::TsReaderCPP& tl,  std::int64
 
 PYBIND11_MODULE(libbfiocpp, m) {
     py::class_<Seq, std::shared_ptr<Seq>>(m, "Seq")  
-        .def(py::init<const size_t, const size_t, const size_t>())
-        .def("set_valid_dimension", &bfiocpp::Seq::SetValidDimension);
+        .def(py::init<const size_t, const size_t, const size_t>());
     
     py::class_<bfiocpp::TsReaderCPP, std::shared_ptr<bfiocpp::TsReaderCPP>>(m, "TsReaderCPP") 
     .def(py::init<const std::string &, bfiocpp::FileType, const std::string &>()) 
@@ -123,6 +122,6 @@ PYBIND11_MODULE(libbfiocpp, m) {
     
     // Writer class
     py::class_<bfiocpp::TsWriterCPP, std::shared_ptr<bfiocpp::TsWriterCPP>>(m, "TsWriterCPP") 
-    .def(py::init<const std::string&, const std::vector<std::int64_t>&, const std::vector<std::int64_t>&, const std::string&>())
+    .def(py::init<const std::string&, const std::vector<std::int64_t>&, const std::vector<std::int64_t>&, const std::string&, const std::string&>())
     .def("write_image_data", &bfiocpp::TsWriterCPP::WriteImageData);
 }
