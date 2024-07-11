@@ -12,20 +12,21 @@ namespace bfiocpp{
 
 class TsWriterCPP{
 public:
-    TsWriterCPP(
+    TsWriterCPP (
         const std::string& fname, 
         const std::vector<std::int64_t>& image_shape, 
-        const std::vector<std::int64_t>& chunk_shape, 
-        const std::string& dtype
+        const std::vector<std::int64_t>& chunk_shape,
+        const std::string& dtype_str,
+        const std::string& dimension_order
     );
 
-    void WriteImageData(
+    void WriteImageData (
         py::array& py_image, 
         const Seq& rows, 
         const Seq& cols, 
-        const Seq& layers, 
-        const Seq& channels, 
-        const Seq& tsteps
+        const std::optional<Seq>& layers, 
+        const std::optional<Seq>& channels, 
+        const std::optional<Seq>& tsteps
     );
 
 private:
@@ -37,15 +38,8 @@ private:
 
     tensorstore::TensorStore<void, -1, tensorstore::ReadWriteMode::dynamic> _source;
 
-    tensorstore::IndexTransform<> output_transform_;
-
-    void SetOutputTransform(
-        const Seq& rows, 
-        const Seq& cols, 
-        const Seq& layers, 
-        const Seq& channels, 
-        const Seq& tsteps
-    );
+    std::optional<int>_z_index, _c_index, _t_index;
+    int _x_index, _y_index;
 
 };
 }
