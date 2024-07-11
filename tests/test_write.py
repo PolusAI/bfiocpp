@@ -83,7 +83,7 @@ class TestZarrWrite(unittest.TestCase):
             channels = Seq(0, 0, 1)
             tsteps = Seq(0, 0, 1)
 
-            bw = TSWriter(test_file_path, tmp.shape, tmp.shape, str(tmp.dtype))
+            bw = TSWriter(test_file_path, tmp.shape, tmp.shape, str(tmp.dtype), "ZCTYX")
             bw.write_image_data(tmp, rows, cols, layers, channels, tsteps)
             bw.close()
 
