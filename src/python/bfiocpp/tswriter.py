@@ -5,7 +5,12 @@ from .libbfiocpp import TsWriterCPP
 class TSWriter:
 
     def __init__(
-        self, file_name: str, image_shape: list, chunk_shape: list, dtype: np.dtype, dimension_order: str,
+        self,
+        file_name: str,
+        image_shape: list,
+        chunk_shape: list,
+        dtype: np.dtype,
+        dimension_order: str,
     ):
         """Initialize tensorstore Zarr writer
 
