@@ -22,32 +22,32 @@ if "-v" in sys.argv:
     logger.setLevel(logging.INFO)
 
 
-# def setUpModule():
-#     """Download images for testing"""
-#     TEST_DIR.mkdir(exist_ok=True)
+def setUpModule():
+    """Download images for testing"""
+    TEST_DIR.mkdir(exist_ok=True)
 
-#     for file, url in TEST_IMAGES.items():
-#         logger.info(f"setup - Downloading: {file}")
+    for file, url in TEST_IMAGES.items():
+        logger.info(f"setup - Downloading: {file}")
 
-#         if not file.endswith(".zarr"):
-#             if TEST_DIR.joinpath(file).exists():
-#                 continue
+        if not file.endswith(".zarr"):
+            if TEST_DIR.joinpath(file).exists():
+                continue
 
-#             r = requests.get(url)
+            r = requests.get(url)
 
-#             with open(TEST_DIR.joinpath(file), "wb") as fw:
-#                 fw.write(r.content)
-#         else:
-#             if TEST_DIR.joinpath(file).exists():
-#                 shutil.rmtree(TEST_DIR.joinpath(file))
-#             zarr_download(url, str(TEST_DIR))
+            with open(TEST_DIR.joinpath(file), "wb") as fw:
+                fw.write(r.content)
+        else:
+            if TEST_DIR.joinpath(file).exists():
+                shutil.rmtree(TEST_DIR.joinpath(file))
+            zarr_download(url, str(TEST_DIR))
 
 
-# def tearDownModule():
-#     """Remove test images"""
+def tearDownModule():
+    """Remove test images"""
 
-#     logger.info("teardown - Removing test images...")
-#     shutil.rmtree(TEST_DIR)
+    logger.info("teardown - Removing test images...")
+    shutil.rmtree(TEST_DIR)
 
 
 class TestZarrWrite(unittest.TestCase):
