@@ -1,4 +1,5 @@
 import numpy as np
+from typing import Optional
 from .libbfiocpp import TsWriterCPP
 
 
@@ -26,9 +27,9 @@ class TSWriter:
         image_data: np.ndarray,
         rows: int,
         cols: int,
-        layers: int,
-        channels: int,
-        tsteps: int,
+        layers: Optional[int] = None,
+        channels: Optional[int] = None,
+        tsteps: Optional[int] = None,
     ):
         """Write image data to file
 
