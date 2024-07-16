@@ -53,7 +53,7 @@ def tearDownModule():
 class TestZarrWrite(unittest.TestCase):
 
     def test_write_zarr_2d(self):
-        """test_write_zarr_2d - Write zarr using TSWrtier"""
+        """test_write_zarr_2d - Write zarr using TSWriter"""
 
         br = TSReader(
             str(TEST_DIR.joinpath("5025551.zarr/0")),
@@ -101,7 +101,7 @@ class TestZarrWrite(unittest.TestCase):
             assert tmp.shape == (1, 1, 1, 2700, 2702)
 
     def test_write_zarr_chunk_2d(self):
-        """test_write_zarr_2d - Write zarr using TSWrtier"""
+        """test_write_zarr_2d - Write zarr using TsWriter"""
 
         br = TSReader(
             str(TEST_DIR.joinpath("5025551.zarr/0")),
@@ -171,7 +171,7 @@ class TestZarrWrite(unittest.TestCase):
             assert tmp.sum() == 183750394
     
     def test_write_zarr_3d(self):
-        """test_write_zarr_2d - Write zarr using TSWrtier"""
+        """test_write_zarr_2d - Write zarr using TsWriter"""
 
         br = TSReader(
             str(TEST_DIR.joinpath("5025551.zarr/0")),
@@ -222,7 +222,7 @@ class TestZarrWrite(unittest.TestCase):
 
 
     def test_write_zarr_chunk_3d(self):
-        """test_write_zarr_2d - Write zarr using TSWrtier"""
+        """test_write_zarr_2d - Write zarr using TsWriter"""
 
         br = TSReader(
             str(TEST_DIR.joinpath("5025551.zarr/0")),
