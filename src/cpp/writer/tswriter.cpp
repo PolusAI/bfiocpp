@@ -30,8 +30,19 @@ TsWriterCPP::TsWriterCPP(
     );
 
     if (dimension_order.size() < 2 || dimension_order.size() > 5) {
-        throw std::invalid_argument("Error: invalid dimension_order \"" + dimension_order 
+        throw std::invalid_argument("Invalid dimension_order \"" + dimension_order 
                                     + "\". dimension_order must contain 2 to 5 dimension variables");
+    }
+
+    auto is_valid_dimensions = [&dimension_order]() {
+        return std::all_of(dimension_order.begin(), dimension_order.end(), [](char ch) {
+            return ch == 'X' || ch == 'Y' || ch == 'Z' || ch == 'C' || ch == 'T';
+        });
+    };
+
+    if (!is_valid_dimensions()) {
+        throw std::invalid_argument("Invalid dimension_order \"" + dimension_order 
+                                    + "\". dimension_order must only contain dimensions \"T, C, Z, Y, or X\".");
     }
 
     auto position = dimension_order.find("X");
