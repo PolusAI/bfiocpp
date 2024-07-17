@@ -29,11 +29,24 @@ TsWriterCPP::TsWriterCPP(
         tensorstore::ReadWriteMode::write).result()
     );
 
+    if (dimension_order.size() < 2 || dimension_order.size() > 5) {
+        throw std::invalid_argument("Error: invalid dimension_order \"" + dimension_order 
+                                    + "\". dimension_order must contain 2 to 5 dimension variables");
+    }
+
     auto position = dimension_order.find("X");
-    if (position != std::string::npos) _x_index = position;
+    if (position != std::string::npos) { 
+        _x_index = position;
+    } else {
+        throw std::invalid_argument("Error: dimension_order must contain the dimension \"X\"");
+    }
 
     position = dimension_order.find("Y");
-    if (position != std::string::npos) _y_index = position;
+    if (position != std::string::npos) {
+        _y_index = position;
+    } else {
+        throw std::invalid_argument("Error: dimension_order must contain the dimension \"Y\"");
+    }
 
     position = dimension_order.find("C");
     if (position != std::string::npos) _c_index.emplace(position);
