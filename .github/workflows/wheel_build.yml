@@ -51,9 +51,8 @@ jobs:
           CIBW_BEFORE_ALL_MACOS: brew install nasm &&
                           bash ci-utils/install_prereq_linux.sh &&
                           mkdir -p /tmp/bfiocpp_bld &&
-                          cp -r local_install /tmp/bfiocpp_bld
-          CIBW_BEFORE_ALL_LINUX: yum -y install wget &&
-                                   wget https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/nasm-2.15.05.tar.bz2 &&
+                          cp -r local_install /tmp/bfiocpp_bld              
+          CIBW_BEFORE_ALL_LINUX: curl -L https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/nasm-2.15.05.tar.bz2 -o nasm-2.15.05.tar.bz2 &&
                                    tar -xjf nasm-2.15.05.tar.bz2 &&
                                    cd nasm-2.15.05 &&
                                    ./configure && 
@@ -71,8 +70,11 @@ jobs:
           CIBW_ENVIRONMENT_WINDOWS: PATH="$TEMP\\bfiocpp\\bin;$PATH" ON_GITHUB="TRUE" BFIOCPP_DEP_DIR="C:\\TEMP\\bfiocpp_bld\\local_install" CMAKE_ARGS="-DCMAKE_GENERATOR=Ninja"
           CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -w {dest_dir} {wheel}"
           CIBW_ARCHS: ${{ matrix.cibw_archs }}
-          CIBW_BEFORE_TEST_LINUX: yum -y install maven java
-          CIBW_TEST_REQUIRES: bfio requests numpy ome_zarr
+          CIBW_BEFORE_TEST_LINUX: sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo &&
+                                  sed -i s/^#.*baseurl=http/baseurl=http/g /etc/yum.repos.d/*.repo &&
+                                  sed -i s/^mirrorlist=http/#mirrorlist=http/g /etc/yum.repos.d/*.repo && 
+                                  yum -y install maven java
+          CIBW_TEST_REQUIRES: bfio requests numpy==1.24.0 ome_zarr
           CIBW_TEST_COMMAND: python -W default -m unittest discover -s {project}/tests -v
 
       - name: Upload Artifact

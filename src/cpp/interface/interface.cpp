@@ -4,7 +4,7 @@
 #include <pybind11/numpy.h>
 #include <tuple>
 #include "../reader/tsreader.h"
-#include "../reader/sequence.h"
+#include "../utilities/sequence.h"
 #include "../utilities/utilities.h"
 #include "../writer/tswriter.h"
 
@@ -122,6 +122,6 @@ PYBIND11_MODULE(libbfiocpp, m) {
     
     // Writer class
     py::class_<bfiocpp::TsWriterCPP, std::shared_ptr<bfiocpp::TsWriterCPP>>(m, "TsWriterCPP") 
-    .def(py::init<const std::string&, const std::vector<std::int64_t>&, const std::vector<std::int64_t>&, const std::string&>())
+    .def(py::init<const std::string&, const std::vector<std::int64_t>&, const std::vector<std::int64_t>&, const std::string&, const std::string&>())
     .def("write_image_data", &bfiocpp::TsWriterCPP::WriteImageData);
 }
