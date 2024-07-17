@@ -37,7 +37,6 @@ class TSWriter:
         """
 
         if not isinstance(image_data, np.ndarray):
-
             raise ValueError("Image data must be a 5d numpy array")
 
         try:
