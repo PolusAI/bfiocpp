@@ -146,7 +146,7 @@ class TestZarrWrite(unittest.TestCase):
 
             assert tmp.dtype == np.uint8
             assert tmp.sum() == 183750394
-            assert tmp.shape == (1, 1, 1, 2700, 2702)
+            assert tmp.shape == (1, 2700, 2702)
 
     def test_write_zarr_chunk_5d(self):
         """test_write_zarr_5d - Write zarr using TsWriter"""
