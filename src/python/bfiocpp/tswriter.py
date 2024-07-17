@@ -1,6 +1,6 @@
 import numpy as np
 from typing import Optional
-from .libbfiocpp import TsWriterCPP
+from .libbfiocpp import TsWriterCPP, Seq
 
 
 class TSWriter:
@@ -25,11 +25,11 @@ class TSWriter:
     def write_image_data(
         self,
         image_data: np.ndarray,
-        rows: int,
-        cols: int,
-        layers: Optional[int] = None,
-        channels: Optional[int] = None,
-        tsteps: Optional[int] = None,
+        rows: Seq,
+        cols: Seq,
+        layers: Optional[Seq] = None,
+        channels: Optional[Seq] = None,
+        tsteps: Optional[Seq] = None,
     ):
         """Write image data to file
 
@@ -37,7 +37,6 @@ class TSWriter:
         """
 
         if not isinstance(image_data, np.ndarray):
-
             raise ValueError("Image data must be a 5d numpy array")
 
         try:

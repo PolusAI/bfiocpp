@@ -29,11 +29,35 @@ TsWriterCPP::TsWriterCPP(
         tensorstore::ReadWriteMode::write).result()
     );
 
+    if (dimension_order.size() < 2 || dimension_order.size() > 5) {
+        throw std::invalid_argument("Invalid dimension_order \"" + dimension_order 
+                                    + "\". dimension_order must contain 2 to 5 dimension variables");
+    }
+
+    auto is_valid_dimensions = [&dimension_order]() {
+        return std::all_of(dimension_order.begin(), dimension_order.end(), [](char ch) {
+            return ch == 'X' || ch == 'Y' || ch == 'Z' || ch == 'C' || ch == 'T';
+        });
+    };
+
+    if (!is_valid_dimensions()) {
+        throw std::invalid_argument("Invalid dimension_order \"" + dimension_order 
+                                    + "\". dimension_order must only contain dimensions \"T, C, Z, Y, or X\".");
+    }
+
     auto position = dimension_order.find("X");
-    if (position != std::string::npos) _x_index = position;
+    if (position != std::string::npos) { 
+        _x_index = position;
+    } else {
+        throw std::invalid_argument("Error: dimension_order must contain the dimension \"X\"");
+    }
 
     position = dimension_order.find("Y");
-    if (position != std::string::npos) _y_index = position;
+    if (position != std::string::npos) {
+        _y_index = position;
+    } else {
+        throw std::invalid_argument("Error: dimension_order must contain the dimension \"Y\"");
+    }
 
     position = dimension_order.find("C");
     if (position != std::string::npos) _c_index.emplace(position);
