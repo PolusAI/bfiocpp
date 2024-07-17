@@ -57,9 +57,9 @@ void TsWriterCPP::WriteImageData(
 
     auto output_transform = tensorstore::IdentityTransform(_source.domain());
 
-    if (_z_index.has_value() && layers.has_value()) {
-        output_transform = (std::move(output_transform) | tensorstore::Dims(_z_index.value()).ClosedInterval(layers.value().Start(), layers.value().Stop())).value();
-        shape.emplace_back(layers.value().Stop() - layers.value().Start()+1);
+    if (_t_index.has_value() && tsteps.has_value()) {
+        output_transform = (std::move(output_transform) | tensorstore::Dims(_t_index.value()).ClosedInterval(tsteps.value().Start(), tsteps.value().Stop())).value();
+        shape.emplace_back(tsteps.value().Stop() - tsteps.value().Start()+1);
     }
 
     if (_c_index.has_value() && channels.has_value()) {
@@ -67,9 +67,9 @@ void TsWriterCPP::WriteImageData(
         shape.emplace_back(channels.value().Stop() - channels.value().Start()+1);
     }
 
-    if (_t_index.has_value() && tsteps.has_value()) {
-        output_transform = (std::move(output_transform) | tensorstore::Dims(_t_index.value()).ClosedInterval(tsteps.value().Start(), tsteps.value().Stop())).value();
-        shape.emplace_back(tsteps.value().Stop() - tsteps.value().Start()+1);
+    if (_z_index.has_value() && layers.has_value()) {
+        output_transform = (std::move(output_transform) | tensorstore::Dims(_z_index.value()).ClosedInterval(layers.value().Start(), layers.value().Stop())).value();
+        shape.emplace_back(layers.value().Stop() - layers.value().Start()+1);
     }
 
     output_transform = (std::move(output_transform) | tensorstore::Dims(_y_index).ClosedInterval(rows.Start(), rows.Stop()) |
