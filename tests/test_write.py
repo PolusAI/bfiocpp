@@ -344,3 +344,72 @@ class TestZarrWrite(unittest.TestCase):
             assert tmp.dtype == np.uint8
             assert tmp.sum() == 3*183750394
             assert tmp.shape == (1, 3, 1, 2700, 2702)
+
+    def test_invalid_dimension_order_no_X(self):
+
+        br = TSReader(
+            str(TEST_DIR.joinpath("5025551.zarr/0")),
+            FileType.OmeZarr,
+            "",
+        )
+
+        rows = Seq(0, br._Y - 1, 1)
+        cols = Seq(0, br._X - 1, 1)
+        layers = Seq(0, 0, 1)
+        channels = Seq(0, 0, 1)
+        tsteps = Seq(0, 0, 1)
+        tmp = br.data(rows, cols, layers, channels, tsteps)
+
+        with tempfile.TemporaryDirectory() as dir:
+
+            test_file_path = os.path.join(dir, 'out/invalid.ome.zarr')
+            chunk_size = (1,1,1,2700,2702)
+
+            with self.assertRaises(Exception):
+                TSWriter(test_file_path, tmp.shape, chunk_size, str(tmp.dtype), "TCZY")
+
+    def test_invalid_dimension_order_no_Y(self):
+
+        br = TSReader(
+            str(TEST_DIR.joinpath("5025551.zarr/0")),
+            FileType.OmeZarr,
+            "",
+        )
+
+        rows = Seq(0, br._Y - 1, 1)
+        cols = Seq(0, br._X - 1, 1)
+        layers = Seq(0, 0, 1)
+        channels = Seq(0, 0, 1)
+        tsteps = Seq(0, 0, 1)
+        tmp = br.data(rows, cols, layers, channels, tsteps)
+
+        with tempfile.TemporaryDirectory() as dir:
+            
+            test_file_path = os.path.join(dir, 'out/invalid.ome.zarr')
+            chunk_size = (1,1,1,2700,2702)
+
+            with self.assertRaises(Exception):
+                TSWriter(test_file_path, tmp.shape, chunk_size, str(tmp.dtype), "TCZX")
+
+    def test_invalid_dimension_order_character(self):
+
+        br = TSReader(
+            str(TEST_DIR.joinpath("5025551.zarr/0")),
+            FileType.OmeZarr,
+            "",
+        )
+
+        rows = Seq(0, br._Y - 1, 1)
+        cols = Seq(0, br._X - 1, 1)
+        layers = Seq(0, 0, 1)
+        channels = Seq(0, 0, 1)
+        tsteps = Seq(0, 0, 1)
+        tmp = br.data(rows, cols, layers, channels, tsteps)
+
+        with tempfile.TemporaryDirectory() as dir:
+            
+            test_file_path = os.path.join(dir, 'out/invalid.ome.zarr')
+            chunk_size = (1,1,1,2700,2702)
+
+            with self.assertRaises(Exception):
+                TSWriter(test_file_path, tmp.shape, chunk_size, str(tmp.dtype), "ATCZYX")
