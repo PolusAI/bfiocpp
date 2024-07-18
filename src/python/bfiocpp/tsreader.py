@@ -18,7 +18,7 @@ class TSReader:
         self._filetype = file_type
 
     def data(
-        self, rows: int, cols: int, layers: int, channels: int, tsteps: int
+        self, rows: Seq, cols: Seq, layers: Seq, channels: Seq, tsteps: Seq
     ) -> np.ndarray:
         return self._image_reader.get_image_data(rows, cols, layers, channels, tsteps)
 

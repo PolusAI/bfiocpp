@@ -70,7 +70,7 @@ TsWriterCPP::TsWriterCPP(
 }
 
 void TsWriterCPP::WriteImageData(
-    py::array& py_image,
+    const py::array& py_image,
     const Seq& rows,
     const Seq& cols,
     const std::optional<Seq>& layers,
@@ -108,7 +108,7 @@ void TsWriterCPP::WriteImageData(
     switch(_dtype_code)
     {
         case (1): {
-            auto data_array = tensorstore::Array(py_image.mutable_unchecked<std::uint8_t, 1>().data(0), shape, tensorstore::c_order);
+            auto data_array = tensorstore::Array(py_image.unchecked<std::uint8_t, 1>().data(0), shape, tensorstore::c_order);
 
             // Write data array to TensorStore
             auto write_result = tensorstore::Write(tensorstore::UnownedToShared(data_array), _source | output_transform).result();
@@ -120,7 +120,7 @@ void TsWriterCPP::WriteImageData(
             break;
         }
         case (2): {
-            auto data_array = tensorstore::Array(py_image.mutable_unchecked<std::uint16_t, 1>().data(0), shape, tensorstore::c_order);
+            auto data_array = tensorstore::Array(py_image.unchecked<std::uint16_t, 1>().data(0), shape, tensorstore::c_order);
 
             auto write_result = tensorstore::Write(tensorstore::UnownedToShared(data_array), _source | output_transform).result();
             if (!write_result.ok()) {
@@ -129,7 +129,7 @@ void TsWriterCPP::WriteImageData(
             break;
         }
         case (4): {
-            auto data_array = tensorstore::Array(py_image.mutable_unchecked<std::uint32_t, 1>().data(0), shape, tensorstore::c_order);
+            auto data_array = tensorstore::Array(py_image.unchecked<std::uint32_t, 1>().data(0), shape, tensorstore::c_order);
 
             auto write_result = tensorstore::Write(tensorstore::UnownedToShared(data_array), _source | output_transform).result();
             if (!write_result.ok()) {
@@ -138,7 +138,7 @@ void TsWriterCPP::WriteImageData(
             break;
         }
         case (8): {
-            auto data_array = tensorstore::Array(py_image.mutable_unchecked<std::uint64_t, 1>().data(0), shape, tensorstore::c_order);
+            auto data_array = tensorstore::Array(py_image.unchecked<std::uint64_t, 1>().data(0), shape, tensorstore::c_order);
 
             auto write_result = tensorstore::Write(tensorstore::UnownedToShared(data_array), _source | output_transform).result();
             if (!write_result.ok()) {
@@ -147,7 +147,7 @@ void TsWriterCPP::WriteImageData(
             break;
         }
         case (16): {
-            auto data_array = tensorstore::Array(py_image.mutable_unchecked<std::int8_t, 1>().data(0), shape, tensorstore::c_order);
+            auto data_array = tensorstore::Array(py_image.unchecked<std::int8_t, 1>().data(0), shape, tensorstore::c_order);
 
             auto write_result = tensorstore::Write(tensorstore::UnownedToShared(data_array), _source | output_transform).result();
             if (!write_result.ok()) {
@@ -156,7 +156,7 @@ void TsWriterCPP::WriteImageData(
             break;
         }
         case (32): {
-            auto data_array = tensorstore::Array(py_image.mutable_unchecked<std::int16_t, 1>().data(0), shape, tensorstore::c_order);
+            auto data_array = tensorstore::Array(py_image.unchecked<std::int16_t, 1>().data(0), shape, tensorstore::c_order);
 
             auto write_result = tensorstore::Write(tensorstore::UnownedToShared(data_array), _source | output_transform).result();
             if (!write_result.ok()) {
@@ -165,7 +165,7 @@ void TsWriterCPP::WriteImageData(
             break;
         }
         case (64): {
-            auto data_array = tensorstore::Array(py_image.mutable_unchecked<std::int32_t, 1>().data(0), shape, tensorstore::c_order);
+            auto data_array = tensorstore::Array(py_image.unchecked<std::int32_t, 1>().data(0), shape, tensorstore::c_order);
 
             auto write_result = tensorstore::Write(tensorstore::UnownedToShared(data_array), _source | output_transform).result();
             if (!write_result.ok()) {
@@ -174,7 +174,7 @@ void TsWriterCPP::WriteImageData(
             break;
         }
         case (128): {
-            auto data_array = tensorstore::Array(py_image.mutable_unchecked<std::int64_t, 1>().data(0), shape, tensorstore::c_order);
+            auto data_array = tensorstore::Array(py_image.unchecked<std::int64_t, 1>().data(0), shape, tensorstore::c_order);
 
             // Write data array to TensorStore
             auto write_result = tensorstore::Write(tensorstore::UnownedToShared(data_array), _source | output_transform).result();
@@ -184,7 +184,7 @@ void TsWriterCPP::WriteImageData(
             break;
         }
         case (256): {
-            auto data_array = tensorstore::Array(py_image.mutable_unchecked<float, 1>().data(0), shape, tensorstore::c_order);
+            auto data_array = tensorstore::Array(py_image.unchecked<float, 1>().data(0), shape, tensorstore::c_order);
 
             auto write_result = tensorstore::Write(tensorstore::UnownedToShared(data_array), _source | output_transform).result();
             if (!write_result.ok()) {
@@ -193,7 +193,7 @@ void TsWriterCPP::WriteImageData(
             break;
         }
         case (512): {
-            auto data_array = tensorstore::Array(py_image.mutable_unchecked<double, 1>().data(0), shape, tensorstore::c_order);
+            auto data_array = tensorstore::Array(py_image.unchecked<double, 1>().data(0), shape, tensorstore::c_order);
 
             auto write_result = tensorstore::Write(tensorstore::UnownedToShared(data_array), _source | output_transform).result();
             if (!write_result.ok()) {
