@@ -21,7 +21,7 @@ public:
     );
 
     void WriteImageData (
-        py::array& py_image, 
+        const py::array& py_image, 
         const Seq& rows, 
         const Seq& cols, 
         const std::optional<Seq>& layers, 
