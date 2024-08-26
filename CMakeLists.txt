@@ -68,5 +68,5 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_link_libraries(libbfiocpp PRIVATE stdc++fs)
 endif()
 
-target_link_libraries(libbfiocpp PRIVATE tensorstore::tensorstore tensorstore::all_drivers)
+target_link_libraries(libbfiocpp PRIVATE tensorstore::tensorstore tensorstore_driver_zarr_driver tensorstore_index_space tensorstore_internal_image_tiff tensorstore_kvstore_file_util tensorstore_internal_os_error_code)
 target_link_libraries(libbfiocpp PRIVATE ${Build_LIBRARIES})  
