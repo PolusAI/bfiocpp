@@ -5,6 +5,9 @@ project(bfio_cpp)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
+
 include(GNUInstallDirs)
 # this is a workaround for GitHub Action for wheelbuiling
 if(DEFINED ENV{BFIOCPP_DEP_DIR})
@@ -70,9 +73,5 @@ endif()
 
 target_link_libraries(libbfiocpp PRIVATE 
                       tensorstore::tensorstore 
-                      tensorstore_driver_zarr_driver 
-                      tensorstore_index_space 
-                      tensorstore_internal_image_tiff 
-                      tensorstore_kvstore_file 
-                      tensorstore_internal_os_error_code)
+                      tensorstore::all_drivers)
 target_link_libraries(libbfiocpp PRIVATE ${Build_LIBRARIES})  
