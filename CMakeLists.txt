@@ -5,6 +5,11 @@ project(bfio_cpp)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+if(NOT WIN32)
+  set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+  set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
+endif()
+
 include(GNUInstallDirs)
 # this is a workaround for GitHub Action for wheelbuiling
 if(DEFINED ENV{BFIOCPP_DEP_DIR})
@@ -45,9 +50,13 @@ include_directories(lib/pugixml)
 
 find_package(Threads QUIET)
 if (Threads_FOUND)
-    if (CMAKE_USE_PTHREADS_INIT)
-		SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
-    endif (CMAKE_USE_PTHREADS_INIT)
+  if (CMAKE_USE_PTHREADS_INIT)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+    elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /pthread")
+    endif()
+  endif (CMAKE_USE_PTHREADS_INIT) 
     list(APPEND Build_LIBRARIES ${CMAKE_THREAD_LIBS_INIT})
 else ()
 	message(STATUS "Unable to find threads. bfio_cpp must have a threading library i.e. pthreads.")
@@ -68,5 +77,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_link_libraries(libbfiocpp PRIVATE stdc++fs)
 endif()
 
-target_link_libraries(libbfiocpp PRIVATE tensorstore::tensorstore tensorstore::all_drivers)
+target_link_libraries(libbfiocpp PRIVATE 
+                      tensorstore::tensorstore 
+                      tensorstore::all_drivers)
 target_link_libraries(libbfiocpp PRIVATE ${Build_LIBRARIES})  
