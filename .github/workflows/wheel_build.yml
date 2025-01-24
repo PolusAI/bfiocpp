@@ -14,7 +14,7 @@ jobs:
       matrix:
         os: [ubuntu-20.04, macos-13, windows-latest]
         cibw_archs: ["auto64"]
-        cibw_build: ["cp38-*", "cp39-*", "cp310-*", "cp311-*"]
+        cibw_build: ["cp38", "cp39", "cp310", "cp311"]
 
     steps:
       - uses: actions/checkout@v3
@@ -44,7 +44,7 @@ jobs:
         run: |
           python -m cibuildwheel --output-dir dist
         env:
-          CIBW_BUILD: ${{ matrix.cibw_build }}
+          CIBW_BUILD: ${{ matrix.cibw_build }}-*
           CIBW_BUILD_VERBOSITY: 3
           CIBW_SKIP: "*musllinux*"
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
@@ -78,9 +78,9 @@ jobs:
           CIBW_TEST_COMMAND: python -W default -m unittest discover -s {project}/tests -v
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: bfiocpp-wheels
+          name: bfiocpp-wheels-${{ matrix.os }}-${{ matrix.cibw_archs }}-${{ matrix.cibw_build }}
           path: dist/*.whl
           retention-days: 1
 
@@ -94,7 +94,7 @@ jobs:
       matrix:
         os: [macos-13-xlarge]
         cibw_archs: ["arm64"]
-        cibw_build: ["cp39-*", "cp310-*", "cp311-*"]
+        cibw_build: ["cp39", "cp310", "cp311"]
 
     steps:
       - uses: actions/checkout@v3
@@ -113,7 +113,7 @@ jobs:
         run: |
           python -m cibuildwheel --output-dir dist
         env:
-          CIBW_BUILD: ${{ matrix.cibw_build }}
+          CIBW_BUILD: ${{ matrix.cibw_build }}-*
           CIBW_BUILD_VERBOSITY: 3
           CIBW_ARCHS_MACOS: arm64
           CIBW_BEFORE_ALL_MACOS:  brew install nasm libjpeg-turbo &&
@@ -130,8 +130,8 @@ jobs:
           CIBW_TEST_COMMAND: python -W default -m unittest discover -s {project}/tests -v
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: bfiocpp-wheels-arm64
+          name: bfiocpp-wheels-${{ matrix.os }}-${{ matrix.cibw_archs }}-${{ matrix.cibw_build }}
           path: dist/*.whl
           retention-days: 1
