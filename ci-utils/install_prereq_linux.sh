@@ -21,3 +21,14 @@ cd build_man
 cmake -DCMAKE_INSTALL_PREFIX=../../$LOCAL_INSTALL_DIR/  -DPYBIND11_TEST=OFF ..
 make install -j4
 cd ../../
+
+if [[ "$OSTYPE" == "darwin"* ]]; then
+      curl -L https://github.com/libjpeg-turbo/libjpeg-turbo/archive/refs/tags/3.1.0.zip -o 3.1.0.zip
+      unzip 3.1.0.zip
+      cd libjpeg-turbo-3.1.0
+      mkdir build_man
+      cd build_man
+      cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DENABLE_STATIC=FALSE -DCMAKE_BUILD_TYPE=Release ..
+      sudo make install -j4
+      cd ../../
+fi
