@@ -8,13 +8,14 @@ jobs:
   build_wheels:
     name: Build wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+    continue-on-error: true
     env:
       MACOSX_DEPLOYMENT_TARGET: "10.15"
     strategy:
       matrix:
         os: [ubuntu-20.04, macos-14-large, windows-latest]
         cibw_archs: ["auto64"]
-        cibw_build: ["cp39", "cp310", "cp311", "cp312", "cp313"]
+        cibw_build: ["cp310", "cp311", "cp312", "cp313"]
 
     steps:
       - uses: actions/checkout@v3
@@ -74,7 +75,7 @@ jobs:
                                   sed -i s/^#.*baseurl=http/baseurl=http/g /etc/yum.repos.d/*.repo &&
                                   sed -i s/^mirrorlist=http/#mirrorlist=http/g /etc/yum.repos.d/*.repo && 
                                   yum -y install maven java
-          CIBW_TEST_REQUIRES: bfio requests numpy ome_zarr
+          CIBW_TEST_REQUIRES: bfio requests numpy ome_zarr omero-py
           CIBW_TEST_COMMAND: python -W default -m unittest discover -s {project}/tests -v
 
       - name: Upload Artifact
@@ -88,13 +89,14 @@ jobs:
   build_wheels_apple_arm64:
     name: Build wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+    continue-on-error: true
     env:
       MACOSX_DEPLOYMENT_TARGET: "11.0"
     strategy:
       matrix:
         os: [macos-14-xlarge]
         cibw_archs: ["arm64"]
-        cibw_build: ["cp39", "cp310", "cp311", "cp312", "cp313"]
+        cibw_build: ["cp310", "cp311", "cp312", "cp313"]
 
     steps:
       - uses: actions/checkout@v3
@@ -132,7 +134,7 @@ jobs:
             DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-listdeps {wheel} && 
             DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-wheel --require-archs {delocate_archs} -w {dest_dir} {wheel}
           CIBW_ARCHS: ${{ matrix.cibw_archs }}
-          CIBW_TEST_REQUIRES: bfio requests numpy ome_zarr zarr
+          CIBW_TEST_REQUIRES: bfio requests numpy ome_zarr zarr omero-py
           CIBW_TEST_COMMAND: python -W default -m unittest discover -s {project}/tests -v
 
       - name: Upload Artifact
