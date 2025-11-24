@@ -108,7 +108,6 @@ std::shared_ptr<std::vector<T>> TsReaderCPP::GetImageDataTemplated(const Seq& ro
     const auto data_tsteps = tsteps.Stop() - tsteps.Start() + 1;
 
     auto read_buffer = std::make_shared<std::vector<T>>(data_height*data_width*data_depth*data_num_channels*data_tsteps); 
-    auto array = tensorstore::Array(read_buffer->data(), {data_tsteps, data_num_channels, data_depth, data_height, data_width}, tensorstore::c_order);
     tensorstore::IndexTransform<> read_transform = tensorstore::IdentityTransform(source.domain());
 
     if (_file_type == FileType::OmeTiff) {
@@ -136,11 +135,30 @@ std::shared_ptr<std::vector<T>> TsReaderCPP::GetImageDataTemplated(const Seq& ro
         }
         read_transform = (std::move(read_transform) | tensorstore::Dims(y_index).ClosedInterval(rows.Start(), rows.Stop()) |
                                                     tensorstore::Dims(x_index).ClosedInterval(cols.Start(), cols.Stop())).value(); 
-
+        [this, &read_transform, data_tsteps, data_num_channels, data_depth, data_height, data_width, read_buffer](){
+            if(_file_type == FileType::OmeTiff){
+                tensorstore::Read(source | read_transform, tensorstore::UnownedToShared(tensorstore::Array(read_buffer->data(), {data_tsteps, data_num_channels, data_depth, data_height, data_width}, tensorstore::c_order))).value();
+            } else {
+                if (_t_index.has_value() && _c_index.has_value() && _z_index.has_value()){
+                    tensorstore::Read(source | read_transform, tensorstore::UnownedToShared(tensorstore::Array(read_buffer->data(), {data_tsteps, data_num_channels, data_depth, data_height, data_width}, tensorstore::c_order))).value();
+                } else if (_t_index.has_value() && _c_index.has_value() && !_z_index.has_value()){
+                    tensorstore::Read(source | read_transform, tensorstore::UnownedToShared(tensorstore::Array(read_buffer->data(), {data_tsteps, data_num_channels, data_height, data_width}, tensorstore::c_order))).value();
+                } else if (_t_index.has_value() && !_c_index.has_value() && _z_index.has_value()){
+                    tensorstore::Read(source | read_transform, tensorstore::UnownedToShared(tensorstore::Array(read_buffer->data(), {data_tsteps, data_depth, data_height, data_width}, tensorstore::c_order))).value();
+                } else if (!_t_index.has_value() && _c_index.has_value() && _z_index.has_value()){
+                    tensorstore::Read(source | read_transform, tensorstore::UnownedToShared(tensorstore::Array(read_buffer->data(), {data_num_channels, data_depth, data_height, data_width}, tensorstore::c_order))).value();
+                } else if (_t_index.has_value() && !_c_index.has_value() && !_z_index.has_value()){
+                    tensorstore::Read(source | read_transform, tensorstore::UnownedToShared(tensorstore::Array(read_buffer->data(), {data_tsteps, data_height, data_width}, tensorstore::c_order))).value();
+                } else if (!_t_index.has_value() && _c_index.has_value() && !_z_index.has_value()){
+                    tensorstore::Read(source | read_transform, tensorstore::UnownedToShared(tensorstore::Array(read_buffer->data(), {data_num_channels, data_height, data_width}, tensorstore::c_order))).value();
+                } else if (!_t_index.has_value() && !_c_index.has_value() && _z_index.has_value()){
+                    tensorstore::Read(source | read_transform, tensorstore::UnownedToShared(tensorstore::Array(read_buffer->data(), {data_depth, data_height, data_width}, tensorstore::c_order))).value();
+                } else {
+                    tensorstore::Read(source | read_transform, tensorstore::UnownedToShared(tensorstore::Array(read_buffer->data(), {data_height, data_width}, tensorstore::c_order))).value();
+                }
+            }
+        }();
     }
-
-
-    tensorstore::Read(source | read_transform, tensorstore::UnownedToShared(array)).value();
 
     return read_buffer;
 }
