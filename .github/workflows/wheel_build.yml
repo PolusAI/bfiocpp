@@ -13,7 +13,7 @@ jobs:
       MACOSX_DEPLOYMENT_TARGET: "10.15"
     strategy:
       matrix:
-        os: [ubuntu-20.04, macos-14-large, windows-latest]
+        os: [ubuntu-22.04, macos-14-large, windows-latest]
         cibw_archs: ["auto64"]
         cibw_build: ["cp310", "cp311", "cp312", "cp313"]
 
@@ -73,8 +73,10 @@ jobs:
           CIBW_ARCHS: ${{ matrix.cibw_archs }}
           CIBW_BEFORE_TEST_LINUX: sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo &&
                                   sed -i s/^#.*baseurl=http/baseurl=http/g /etc/yum.repos.d/*.repo &&
-                                  sed -i s/^mirrorlist=http/#mirrorlist=http/g /etc/yum.repos.d/*.repo && 
+                                  sed -i s/^mirrorlist=http/#mirrorlist=http/g /etc/yum.repos.d/*.repo &&
+                                  pip install --no-deps omero-py &&
                                   yum -y install maven java
+          CIBW_BEFORE_TEST_MACOS: pip install --no-deps omero-py
           CIBW_TEST_REQUIRES: bfio requests numpy ome_zarr omero-py
           CIBW_TEST_COMMAND: python -W default -m unittest discover -s {project}/tests -v
 
@@ -135,6 +137,7 @@ jobs:
             DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-wheel --require-archs {delocate_archs} -w {dest_dir} {wheel}
           CIBW_ARCHS: ${{ matrix.cibw_archs }}
           CIBW_TEST_REQUIRES: bfio requests numpy ome_zarr zarr omero-py
+          CIBW_BEFORE_TEST_MACOS: pip install https://github.com/glencoesoftware/zeroc-ice-py-macos-universal2/releases/download/20240131/zeroc_ice-3.6.5-${{ matrix.cibw_build }}-${{ matrix.cibw_build }}-macosx_11_0_universal2.whl
           CIBW_TEST_COMMAND: python -W default -m unittest discover -s {project}/tests -v
 
       - name: Upload Artifact
