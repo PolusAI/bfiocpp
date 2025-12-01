@@ -49,7 +49,7 @@ jobs:
           CIBW_BUILD: ${{ matrix.cibw_build }}-*
           CIBW_BUILD_VERBOSITY: 3
           CIBW_SKIP: "*musllinux*"
-          CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
+          CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
           CIBW_BEFORE_ALL_MACOS: brew install nasm &&
                           bash ci-utils/install_prereq_linux.sh &&
                           mkdir -p /tmp/bfiocpp_bld &&
@@ -72,10 +72,10 @@ jobs:
           CIBW_ENVIRONMENT_WINDOWS: PATH="$TEMP\\bfiocpp\\bin;$PATH" ON_GITHUB="TRUE" BFIOCPP_DEP_DIR="C:\\TEMP\\bfiocpp_bld\\local_install" CMAKE_ARGS="-DCMAKE_GENERATOR=Ninja"
           CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -w {dest_dir} {wheel}"
           CIBW_ARCHS: ${{ matrix.cibw_archs }}
-          CIBW_BEFORE_TEST_LINUX: sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo &&
-                                  sed -i s/^#.*baseurl=http/baseurl=http/g /etc/yum.repos.d/*.repo &&
-                                  sed -i s/^mirrorlist=http/#mirrorlist=http/g /etc/yum.repos.d/*.repo && 
-                                  yum -y install maven java
+          CIBW_BEFORE_TEST_LINUX: dnf -y module reset maven || true &&
+                                  dnf -y module enable maven:3.8 &&
+                                  dnf -y install --setopt=install_weak_deps=False java-17-openjdk-headless &&
+                                  dnf -y install --setopt=install_weak_deps=False maven maven-openjdk17
           CIBW_TEST_REQUIRES: bfio requests numpy ome_zarr
           CIBW_TEST_COMMAND: python -W default -m unittest discover -s {project}/tests -v
 
