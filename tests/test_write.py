@@ -1,10 +1,12 @@
 from bfiocpp import TSReader, TSWriter, Seq, FileType
 import unittest
 import requests, pathlib, shutil, logging, sys
+# SEE : Initialization of bio-formats java backend https://bio-formats.readthedocs.io/en/stable/developers/java-library.html
+# The order of initialization between ome_zarr.utils and bfio matters
+from ome_zarr.utils import download as zarr_download
 import bfio
 import numpy as np
 import tempfile, os
-from ome_zarr.utils import download as zarr_download
 
 TEST_IMAGES = {
     "5025551.zarr": "https://uk1s3.embassy.ebi.ac.uk/idr/zarr/v0.4/idr0054A/5025551.zarr",
