@@ -4,10 +4,46 @@ import sys
 import versioneer
 import platform
 import subprocess
+# from pathlib import Path
 
 from distutils.version import LooseVersion
 from setuptools import setup, find_packages, Extension
 from setuptools.command.build_ext import build_ext
+
+
+# def patch_grpc_basic_seq(build_temp: str) -> None:
+#     """
+#     Patch gRPC's basic_seq.h to drop the 'template' keyword from
+#     Traits::template CallSeqFactory(...) which appears to upset
+#     Apple Clang on macOS 15 / Xcode 16.
+#     """
+#     build_temp_path = Path(build_temp)
+#     basic_seq_files = list(build_temp_path.rglob("basic_seq.h"))
+
+#     if not basic_seq_files:
+#         print("[patch_grpc_basic_seq] No basic_seq.h found under", build_temp_path)
+#         return
+
+#     pattern = "Traits::template CallSeqFactory("
+#     replacement = "Traits::CallSeqFactory("
+
+#     for hdr in basic_seq_files:
+#         try:
+#             text = hdr.read_text()
+#         except OSError as e:
+#             print(f"[patch_grpc_basic_seq] Failed to read {hdr}: {e}")
+#             continue
+
+#         if pattern not in text:
+#             print(f"[patch_grpc_basic_seq] Pattern not found in {hdr}")
+#             continue
+
+#         new_text = text.replace(pattern, replacement)
+#         try:
+#             hdr.write_text(new_text)
+#             print(f"[patch_grpc_basic_seq] Patched CallSeqFactory in {hdr}")
+#         except OSError as e:
+#             print(f"[patch_grpc_basic_seq] Failed to write {hdr}: {e}")
 
 
 class CMakeExtension(Extension):
@@ -77,6 +113,10 @@ class CMakeBuild(build_ext):
         subprocess.check_call(
             ["cmake", ext.sourcedir] + cmake_args, cwd=self.build_temp, env=env
         )
+
+        # if platform.system() == "Darwin":
+        #     print("--------------- Applying gRPC basic_seq patch on macOS")
+        #     patch_grpc_basic_seq(self.build_temp)
 
         if platform.system() == "Linux":
             rl = r"s/^#ifdef __has_builtin$/#if defined(__has_builtin)"

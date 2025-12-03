@@ -42,7 +42,7 @@ FetchContent_Declare(
 )
 
 # Additional FetchContent_Declare calls as needed...
-
+set(TENSORSTORE_USE_SYSTEM_GRPC ON CACHE BOOL "")
 FetchContent_MakeAvailable(tensorstore)
 
 
