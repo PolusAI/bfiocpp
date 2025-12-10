@@ -70,7 +70,12 @@ jobs:
                           cp -r local_install /tmp/bfiocpp_bld
           CIBW_BEFORE_ALL_WINDOWS: ci-utils\install_prereq_win.bat &&
                                    xcopy /E /I /y local_install C:\TEMP\bfiocpp_bld\local_install 
-          CIBW_ENVIRONMENT_MACOS: REPAIR_LIBRARY_PATH="/tmp/bfiocpp_bld/local_install/lib:/tmp/bfiocpp_bld/local_install/lib64" ON_GITHUB="TRUE" BFIOCPP_DEP_DIR="/tmp/bfiocpp_bld/local_install"
+          CIBW_ENVIRONMENT_MACOS: >-
+            MACOSX_DEPLOYMENT_TARGET=11.0
+            REPAIR_LIBRARY_PATH="/tmp/bfiocpp_bld/local_install/lib:/tmp/bfiocpp_bld/local_install/lib64"
+            ON_GITHUB="TRUE"
+            BFIOCPP_DEP_DIR="/tmp/bfiocpp_bld/local_install"
+            CMAKE_ARGS="-DCMAKE_CXX_FLAGS=-Wno-missing-template-arg-list-after-template-kw -DTENSORSTORE_USE_SYSTEM_JPEG=ON -DTENSORSTORE_USE_SYSTEM_ZLIB=ON -DTENSORSTORE_USE_SYSTEM_PNG=ON"
           CIBW_ENVIRONMENT_LINUX: LD_LIBRARY_PATH="/tmp/bfiocpp_bld/local_install/lib:/tmp/bfiocpp_bld/local_install/lib64:$LD_LIBRARY_PATH" ON_GITHUB="TRUE" BFIOCPP_DEP_DIR="/tmp/bfiocpp_bld/local_install" 
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-listdeps {wheel} && DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-wheel --require-archs {delocate_archs} -w {dest_dir} {wheel}
           CIBW_ENVIRONMENT_WINDOWS: PATH="$TEMP\\bfiocpp\\bin;$PATH" ON_GITHUB="TRUE" BFIOCPP_DEP_DIR="C:\\TEMP\\bfiocpp_bld\\local_install" CMAKE_ARGS="-DCMAKE_GENERATOR=Ninja"
