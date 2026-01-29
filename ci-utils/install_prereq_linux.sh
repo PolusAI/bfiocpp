@@ -56,15 +56,3 @@ cd build_man
 cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_INSTALL_PREFIX=/usr/local ..
 make install -j4
 cd ../../
-
-
-if [[ "$OSTYPE" == "darwin"* ]]; then
-  curl -L https://github.com/google/boringssl/archive/refs/tags/0.20251124.0.zip -o boringssl-0.20251124.0.zip
-  unzip boringssl-0.20251124.0.zip
-  cd boringssl-0.20251124.0
-  mkdir build_man   
-  cd build_man
-  cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_BUILD_TYPE=Release ..
-  sudo make install -j4
-  cd ../../
-fi
