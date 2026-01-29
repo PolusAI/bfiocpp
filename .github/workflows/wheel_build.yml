@@ -45,14 +45,6 @@ jobs:
         run: |
           python -m pip install cibuildwheel delvewheel wheel
       
-      - name: Remove conflicting OpenSSL
-        if: runner.os == 'macOS'
-        run: |
-          # Uninstall homebrew OpenSSL if present
-          brew uninstall --ignore-dependencies openssl || true
-          # Or just remove the include path
-          sudo rm -rf /usr/local/include/openssl
-      
       - name: Building wheels
         run: |
           python -m cibuildwheel --output-dir dist
@@ -64,6 +56,8 @@ jobs:
           CIBW_BEFORE_ALL_MACOS: brew install nasm &&
                           bash ci-utils/install_prereq_linux.sh &&
                           mkdir -p /tmp/bfiocpp_bld &&
+                          brew uninstall --ignore-dependencies openssl || true &&
+                          sudo rm -rf /usr/local/include/openssl &&
                           cp -r local_install /tmp/bfiocpp_bld              
           CIBW_BEFORE_ALL_LINUX: curl -L https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/nasm-2.15.05.tar.bz2 -o nasm-2.15.05.tar.bz2 &&
                                    tar -xjf nasm-2.15.05.tar.bz2 &&
