@@ -74,7 +74,7 @@ jobs:
             REPAIR_LIBRARY_PATH="/tmp/bfiocpp_bld/local_install/lib:/tmp/bfiocpp_bld/local_install/lib64"
             ON_GITHUB="TRUE"
             BFIOCPP_DEP_DIR="/tmp/bfiocpp_bld/local_install"
-            CMAKE_ARGS="-DCMAKE_CXX_FLAGS=-Wno-missing-template-arg-list-after-template-kw -DTENSORSTORE_USE_SYSTEM_JPEG=ON -DTENSORSTORE_USE_SYSTEM_ZLIB=ON -DTENSORSTORE_USE_SYSTEM_PNG=ON"
+            CMAKE_ARGS="-DCMAKE_CXX_FLAGS=-Wno-missing-template-arg-list-after-template-kw -DTENSORSTORE_USE_SYSTEM_JPEG=ON -DTENSORSTORE_USE_SYSTEM_ZLIB=ON -DTENSORSTORE_USE_SYSTEM_PNG=ON -DTENSORSTORE_USE_SYSTEM_BORINGSSL=ON"
           CIBW_ENVIRONMENT_LINUX: >-
             LD_LIBRARY_PATH="/tmp/bfiocpp_bld/local_install/lib:/tmp/bfiocpp_bld/local_install/lib64:$LD_LIBRARY_PATH"
             ON_GITHUB="TRUE" 
