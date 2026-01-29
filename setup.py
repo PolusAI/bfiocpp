@@ -78,18 +78,6 @@ class CMakeBuild(build_ext):
             ["cmake", ext.sourcedir] + cmake_args, cwd=self.build_temp, env=env
         )
 
-        if platform.system() == "Linux":
-            rl = r"s/^#ifdef __has_builtin$/#if defined(__has_builtin)"
-            rf = r"\&\& defined(__clang__)/"
-            rsed = rl + rf
-            path_header = "_deps/tensorstore-src/tensorstore/internal/type_traits.h"
-            result = subprocess.call(["sed", "-i",
-                                      rsed,
-                                      path_header],
-                                     cwd=self.build_temp, env=env)
-            if result != 0:
-                print("--------------- TensorStore patch failed!")
-
         subprocess.check_call(
             ["cmake", "--build", "."] + build_args, cwd=self.build_temp
         )
