@@ -33,11 +33,13 @@
 #include "tensorstore/internal/json_binding/bindable.h"
 #include "tensorstore/internal/json_binding/json_binding.h"
 #include "tensorstore/internal/metrics/counter.h"
-#include "tensorstore/internal/os_error_code.h"
+#include "tensorstore/internal/os/error_code.h"
+#include "tensorstore/internal/os/file_descriptor.h"
+#include "tensorstore/internal/os/file_info.h"
+#include "tensorstore/internal/os/file_util.h"
 #include "tensorstore/internal/path.h"
-#include "tensorstore/internal/type_traits.h"
+#include "tensorstore/internal/uri_utils.h"
 #include "tensorstore/kvstore/byte_range.h"
-#include "tensorstore/kvstore/file/unique_handle.h"
 #include "tensorstore/kvstore/file/util.h"
 #include "tensorstore/kvstore/generation.h"
 #include "tensorstore/kvstore/key_range.h"
@@ -54,9 +56,6 @@
 #include "tensorstore/util/status.h"
 #include "tensorstore/util/str_cat.h"
 
-// Include these last to reduce impact of macros.
-#include "tensorstore/kvstore/file/posix_file_util.h"
-#include "tensorstore/kvstore/file/windows_file_util.h"
 
 namespace tensorstore {
 namespace {
@@ -67,13 +66,15 @@ using ::tensorstore::internal::GetLastErrorCode;
 using ::tensorstore::internal::GetOsErrorStatusCode;
 using ::tensorstore::internal::OsErrorCode;
 using ::tensorstore::internal::StatusFromOsError;
-using ::tensorstore::internal_file_util::FileDescriptor;
-using ::tensorstore::internal_file_util::FileInfo;
-using ::tensorstore::internal_file_util::GetFileInfo;
 using ::tensorstore::internal_file_util::IsKeyValid;
-using ::tensorstore::internal_file_util::kLockSuffix;
 using ::tensorstore::internal_file_util::LongestDirectoryPrefix;
-using ::tensorstore::internal_file_util::UniqueFileDescriptor;
+using ::tensorstore::internal_os::kLockSuffix;
+using ::tensorstore::internal_os::FileDescriptor;
+using ::tensorstore::internal_os::FileInfo;
+using ::tensorstore::internal_os::GetFileInfo;
+using ::tensorstore::internal_os::OpenFileWrapper;
+using ::tensorstore::internal_os::OpenFlags;
+using ::tensorstore::internal_os::UniqueFileDescriptor;
 using ::tensorstore::kvstore::ReadResult;
 
 // auto& tiled_tiff_bytes_read = internal_metrics::Counter<int64_t>::New(
@@ -94,9 +95,9 @@ absl::Status ValidateKey(std::string_view key) {
 
 // Encode in the generation fields that uniquely identify the file.
 StorageGeneration GetFileGeneration(const FileInfo& info) {
-  return StorageGeneration::FromValues(internal_file_util::GetDeviceId(info),
-                                       internal_file_util::GetFileId(info),
-                                       internal_file_util::GetMTime(info));
+  return StorageGeneration::FromValues(info.GetDeviceId(),
+                                       info.GetFileId(),
+                                       absl::ToUnixNanos(info.GetMTime()));
 }
 
 /// Returns a absl::Status for the current errno value. The message is composed
@@ -108,10 +109,10 @@ absl::Status StatusFromErrno(std::string_view a = {}, std::string_view b = {},
 
 absl::Status VerifyRegularFile(FileDescriptor fd, FileInfo* info,
                                const char* path) {
-  if (!internal_file_util::GetFileInfo(fd, info)) {
-    return StatusFromErrno("Error getting file information: ", path);
-  }
-  if (!internal_file_util::IsRegularFile(*info)) {
+  TENSORSTORE_RETURN_IF_ERROR(GetFileInfo(fd, info),
+      tensorstore::MaybeAnnotateStatus(_,
+          tensorstore::StrCat("Error getting file information: ", path)));
+  if (!info->IsRegularFile()) {
     return absl::FailedPreconditionError(
         tensorstore::StrCat("Not a regular file: ", path));
   }
@@ -121,19 +122,18 @@ absl::Status VerifyRegularFile(FileDescriptor fd, FileInfo* info,
 Result<UniqueFileDescriptor> OpenValueFile(const char* path,
                                            StorageGeneration* generation,
                                            std::int64_t* size = nullptr) {
-  UniqueFileDescriptor fd =
-      internal_file_util::OpenExistingFileForReading(path);
-  if (!fd.valid()) {
-    auto error = GetLastErrorCode();
-    if (GetOsErrorStatusCode(error) == absl::StatusCode::kNotFound) {
+  auto fd_result = OpenFileWrapper(path, OpenFlags::DefaultRead);
+  if (!fd_result.ok()) {
+    if (fd_result.status().code() == absl::StatusCode::kNotFound) {
       *generation = StorageGeneration::NoValue();
-      return fd;
+      return UniqueFileDescriptor{};
     }
-    return StatusFromOsError(error, "Error opening file: ", path);
+    return fd_result.status();
   }
+  UniqueFileDescriptor fd = std::move(*fd_result);
   FileInfo info;
   TENSORSTORE_RETURN_IF_ERROR(VerifyRegularFile(fd.get(), &info, path));
-  if (size) *size = internal_file_util::GetSize(info);
+  if (size) *size = info.GetSize();
   *generation = GetFileGeneration(info);
   return fd;
 }
@@ -210,9 +210,9 @@ struct ReadTask {
       read_result.state = ReadResult::kMissing;
       return read_result;
     }
-    if (read_result.stamp.generation == options.if_not_equal ||
-        (!StorageGeneration::IsUnknown(options.if_equal) &&
-         read_result.stamp.generation != options.if_equal)) {
+    if (read_result.stamp.generation == options.generation_conditions.if_not_equal ||
+        (!StorageGeneration::IsUnknown(options.generation_conditions.if_equal) &&
+         read_result.stamp.generation != options.generation_conditions.if_equal)) {
       return read_result;
     }
 

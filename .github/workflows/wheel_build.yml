@@ -39,13 +39,13 @@ jobs:
       - uses: actions/setup-python@v4
         name: Install Python
         with:
-          python-version: '3.9'
+          python-version: '3.11'
 
       - name: Install cibuildwheel
         run: |
           python -m pip install cibuildwheel delvewheel wheel
-
-      - name: Building wheels 
+      
+      - name: Building wheels
         run: |
           python -m cibuildwheel --output-dir dist
         env:
@@ -56,6 +56,8 @@ jobs:
           CIBW_BEFORE_ALL_MACOS: brew install nasm &&
                           bash ci-utils/install_prereq_linux.sh &&
                           mkdir -p /tmp/bfiocpp_bld &&
+                          brew uninstall --ignore-dependencies openssl || true &&
+                          sudo rm -rf /usr/local/include/openssl &&
                           cp -r local_install /tmp/bfiocpp_bld              
           CIBW_BEFORE_ALL_LINUX: curl -L https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/nasm-2.15.05.tar.bz2 -o nasm-2.15.05.tar.bz2 &&
                                    tar -xjf nasm-2.15.05.tar.bz2 &&
@@ -75,7 +77,11 @@ jobs:
             ON_GITHUB="TRUE"
             BFIOCPP_DEP_DIR="/tmp/bfiocpp_bld/local_install"
             CMAKE_ARGS="-DCMAKE_CXX_FLAGS=-Wno-missing-template-arg-list-after-template-kw -DTENSORSTORE_USE_SYSTEM_JPEG=ON -DTENSORSTORE_USE_SYSTEM_ZLIB=ON -DTENSORSTORE_USE_SYSTEM_PNG=ON"
-          CIBW_ENVIRONMENT_LINUX: LD_LIBRARY_PATH="/tmp/bfiocpp_bld/local_install/lib:/tmp/bfiocpp_bld/local_install/lib64:$LD_LIBRARY_PATH" ON_GITHUB="TRUE" BFIOCPP_DEP_DIR="/tmp/bfiocpp_bld/local_install" 
+          CIBW_ENVIRONMENT_LINUX: >-
+            LD_LIBRARY_PATH="/tmp/bfiocpp_bld/local_install/lib:/tmp/bfiocpp_bld/local_install/lib64:$LD_LIBRARY_PATH"
+            ON_GITHUB="TRUE" 
+            BFIOCPP_DEP_DIR="/tmp/bfiocpp_bld/local_install"
+            CMAKE_ARGS="-DTENSORSTORE_USE_SYSTEM_JPEG=ON -DTENSORSTORE_USE_SYSTEM_ZLIB=ON -DTENSORSTORE_USE_SYSTEM_PNG=ON"
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-listdeps {wheel} && DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-wheel --require-archs {delocate_archs} -w {dest_dir} {wheel}
           CIBW_ENVIRONMENT_WINDOWS: PATH="$TEMP\\bfiocpp\\bin;$PATH" ON_GITHUB="TRUE" BFIOCPP_DEP_DIR="C:\\TEMP\\bfiocpp_bld\\local_install" CMAKE_ARGS="-DCMAKE_GENERATOR=Ninja"
           CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -w {dest_dir} {wheel}"

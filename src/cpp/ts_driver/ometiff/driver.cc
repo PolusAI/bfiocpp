@@ -2,6 +2,7 @@
 #include "metadata.h"
 
 #include "tensorstore/driver/driver.h"
+#include "tensorstore/driver/driver_spec.h"
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "tensorstore/context.h"
@@ -10,7 +11,11 @@
 #include "tensorstore/driver/registry.h"
 #include "tensorstore/index.h"
 #include "tensorstore/index_space/index_transform_builder.h"
+#include "tensorstore/index_space/transform_broadcastable_array.h"
+#include "tensorstore/internal/async_write_array.h"
 #include "tensorstore/internal/cache/chunk_cache.h"
+#include "tensorstore/internal/chunk_grid_specification.h"
+#include "tensorstore/contiguous_layout.h"
 #include "tensorstore/internal/json_binding/json_binding.h"
 #include "tensorstore/internal/path.h"
 #include "tensorstore/kvstore/kvstore.h"
@@ -19,6 +24,7 @@
 #include "tensorstore/util/future.h"
 
 #include <iostream>
+#include <numeric>
 #include <tuple>
 #include <string>
 
@@ -86,8 +92,7 @@ class OmeTiffDriverSpec
   
 
   Future<internal::Driver::Handle> Open(
-      internal::OpenTransactionPtr transaction,
-      ReadWriteMode read_write_mode) const override;
+      internal::DriverOpenRequest request) const override;
 };
 
 // we need OMETiff Metadata 
@@ -143,11 +148,16 @@ class DataCache : public internal_kvs_backed_chunk_driver::DataCache {
   using Base = internal_kvs_backed_chunk_driver::DataCache;
 
  public:
-  explicit DataCache(Initializer initializer, std::string key_prefix)
-      : Base(initializer,
-             GetChunkGridSpecification(*static_cast<const OmeTiffMetadata*>(
-                 initializer.metadata.get()))),
+  explicit DataCache(Initializer&& initializer, std::string key_prefix)
+      : Base(std::move(initializer),
+             GetChunkGridSpecification(
+                 *static_cast<const OmeTiffMetadata*>(
+                     initializer.metadata.get()))),
         key_prefix_(std::move(key_prefix)) {}
+
+  const OmeTiffMetadata& metadata() const {
+    return *static_cast<const OmeTiffMetadata*>(initial_metadata().get());
+  }
 
   absl::Status ValidateMetadataCompatibility(
       const void* existing_metadata_ptr,
@@ -195,47 +205,70 @@ class DataCache : public internal_kvs_backed_chunk_driver::DataCache {
 
   static internal::ChunkGridSpecification GetChunkGridSpecification(
       const OmeTiffMetadata& metadata) {
-    SharedArray<const void> fill_value(
-        internal::AllocateAndConstructSharedElements(1, value_init,
-                                                     metadata.dtype),
-        StridedLayout<>(metadata.chunk_layout.shape(),
-                        GetConstantVector<Index, 0>(metadata.rank)));
-    return internal::ChunkGridSpecification(
-        {internal::ChunkGridSpecification::Component(std::move(fill_value),
-                                                     // Since all dimensions are
-                                                     // resizable, just specify
-                                                     // unbounded
-                                                     // `component_bounds`.
-                                                     Box<>(metadata.rank))});
+    const DimensionIndex rank = metadata.rank;
+
+    // Create fill value (zero-initialized)
+    auto fill_value = AllocateArray(span<const Index, 0>{}, c_order, value_init,
+                                    metadata.dtype);
+
+    // Valid data bounds - unbounded since all dimensions are resizable
+    Box<> valid_data_bounds(rank);
+
+    // Broadcast fill value to the valid bounds
+    auto chunk_fill_value = BroadcastArray(fill_value, valid_data_bounds).value();
+
+    // Cell chunk shape from metadata
+    std::vector<Index> cell_chunk_shape(metadata.chunk_layout.shape().begin(),
+                                        metadata.chunk_layout.shape().end());
+
+    // Chunked to cell dimensions mapping (identity for OmeTiff)
+    std::vector<DimensionIndex> chunked_to_cell_dimensions(rank);
+    std::iota(chunked_to_cell_dimensions.begin(),
+              chunked_to_cell_dimensions.end(), static_cast<DimensionIndex>(0));
+
+    // Create layout order buffer for C order (identity permutation)
+    DimensionIndex layout_order_buffer[kMaxRank];
+    for (DimensionIndex i = 0; i < rank; ++i) {
+      layout_order_buffer[i] = i;
+    }
+
+    // Build component list with AsyncWriteArray::Spec
+    internal::ChunkGridSpecification::ComponentList components;
+    components.emplace_back(
+        internal::AsyncWriteArray::Spec{std::move(chunk_fill_value),
+                                        std::move(valid_data_bounds),
+                                        ContiguousLayoutPermutation<>(
+                                            span(layout_order_buffer, rank))},
+        std::move(cell_chunk_shape), chunked_to_cell_dimensions);
+
+    return internal::ChunkGridSpecification{std::move(components)};
   }
 
-  Result<absl::InlinedVector<SharedArrayView<const void>, 1>> DecodeChunk(
-      const void* metadata, span<const Index> chunk_indices,
+  Result<absl::InlinedVector<SharedArray<const void>, 1>> DecodeChunk(
+      span<const Index> chunk_indices,
       absl::Cord data) override {
     TENSORSTORE_ASSIGN_OR_RETURN(
         auto array,
-        internal_ometiff::DecodeChunk(*static_cast<const OmeTiffMetadata*>(metadata),
-                                 std::move(data)));
-    return absl::InlinedVector<SharedArrayView<const void>, 1>{
-        std::move(array)};
+        internal_ometiff::DecodeChunk(metadata(), std::move(data)));
+    return absl::InlinedVector<SharedArray<const void>, 1>{
+        SharedArray<const void>(std::move(array))};
   }
 
 
   Result<absl::Cord> EncodeChunk(
-      const void* metadata, span<const Index> chunk_indices,
-      span<const SharedArrayView<const void>> component_arrays) override {
+      span<const Index> chunk_indices,
+      span<const SharedArray<const void>> component_arrays) override {
     return absl::Cord();
   }
 
-   std::string GetChunkStorageKey(const void* metadata_ptr,
-                                 span<const Index> cell_indices) override {
+   std::string GetChunkStorageKey(span<const Index> cell_indices) override {
     // OMETiff is always 5D. So need to add some check here
-    const auto& metadata = *static_cast<const OmeTiffMetadata*>(metadata_ptr);
+    const auto& md = metadata();
 
-    size_t ifd = metadata.GetIfdIndex(cell_indices[2],cell_indices[1],cell_indices[0]);
+    size_t ifd = md.GetIfdIndex(cell_indices[2],cell_indices[1],cell_indices[0]);
     std::string key =
          StrCat(key_prefix_, "__TAG__/" );
-    auto& chunk_shape = metadata.chunk_shape;
+    auto& chunk_shape = md.chunk_shape;
 //    StrAppend(&key, cell_indices.empty() ? 0 : cell_indices[0]);
 
     StrAppend(&key, "_", cell_indices[3]*chunk_shape[3]);
@@ -276,12 +309,12 @@ class DataCache : public internal_kvs_backed_chunk_driver::DataCache {
     return absl::OkStatus();
   }
 
-  Result<ChunkLayout> GetChunkLayout(const void* metadata_ptr,
-                                     std::size_t component_index) override {
-    const auto& metadata = *static_cast<const OmeTiffMetadata*>(metadata_ptr);
+  Result<ChunkLayout> GetChunkLayoutFromMetadata(const void* metadata_ptr,
+                                                  size_t component_index) override {
+    const auto& md = *static_cast<const OmeTiffMetadata*>(metadata_ptr);
     ChunkLayout chunk_layout;
     TENSORSTORE_RETURN_IF_ERROR(SetChunkLayoutFromMetadata(
-        metadata.rank, metadata.chunk_shape, chunk_layout));
+        md.rank, md.chunk_shape, chunk_layout));
     TENSORSTORE_RETURN_IF_ERROR(chunk_layout.Finalize());
     return chunk_layout;
   }
@@ -292,11 +325,16 @@ class DataCache : public internal_kvs_backed_chunk_driver::DataCache {
   std::string key_prefix_;
 };
 
-class OmeTiffDriver : public internal_kvs_backed_chunk_driver::RegisteredKvsDriver<
-                     OmeTiffDriver, OmeTiffDriverSpec> {
-  using Base =
-      internal_kvs_backed_chunk_driver::RegisteredKvsDriver<OmeTiffDriver,
-                                                            OmeTiffDriverSpec>;
+// Forward declaration for the mixin
+class OmeTiffDriver;
+
+using OmeTiffDriverBase = internal_kvs_backed_chunk_driver::RegisteredKvsDriver<
+    OmeTiffDriver, OmeTiffDriverSpec, DataCache,
+    internal::ChunkCacheReadWriteDriverMixin<
+        OmeTiffDriver, internal_kvs_backed_chunk_driver::KvsChunkedDriverBase>>;
+
+class OmeTiffDriver : public OmeTiffDriverBase {
+  using Base = OmeTiffDriverBase;
 
  public:
   using Base::Base;
@@ -333,7 +371,7 @@ class OmeTiffDriver::OpenState : public OmeTiffDriver::OpenStateBase {
 
 
   Result<std::shared_ptr<const void>> Create(
-      const void* existing_metadata) override {
+      const void* existing_metadata, CreateOptions options) override {
     if (existing_metadata) {
       return absl::AlreadyExistsError("");
     }
@@ -345,8 +383,8 @@ class OmeTiffDriver::OpenState : public OmeTiffDriver::OpenStateBase {
     return metadata;
   }
 
-  std::unique_ptr<internal_kvs_backed_chunk_driver::DataCache> GetDataCache(
-      DataCache::Initializer initializer) override {
+  std::unique_ptr<internal_kvs_backed_chunk_driver::DataCacheBase> GetDataCache(
+      internal_kvs_backed_chunk_driver::DataCacheInitializer&& initializer) override {
     return std::make_unique<DataCache>(std::move(initializer),
                                        spec().store.path);
   }
@@ -364,9 +402,8 @@ class OmeTiffDriver::OpenState : public OmeTiffDriver::OpenStateBase {
 };
 
 Future<internal::Driver::Handle> OmeTiffDriverSpec::Open(
-    internal::OpenTransactionPtr transaction,
-    ReadWriteMode read_write_mode) const {
-  return OmeTiffDriver::Open(std::move(transaction), this, read_write_mode);
+    internal::DriverOpenRequest request) const {
+  return OmeTiffDriver::Open(this, std::move(request));
 }
 
 }  // namespace

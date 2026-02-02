@@ -37,8 +37,8 @@ include(FetchContent)
 
 FetchContent_Declare(
   tensorstore
-  URL "https://github.com/google/tensorstore/archive/refs/tags/v0.1.36.tar.gz"
-  URL_HASH SHA256=5857582b1b68e5a3f470d2ee8e9a7fa1ad6e6c7e0867c7c69e5a523ae00bc002
+  URL "https://github.com/google/tensorstore/archive/refs/tags/v0.1.80.tar.gz"
+  URL_HASH SHA256=94866de34b6139d77d30e828a50f9e8df98e7dd68e848393470879aeb50ea7bf
 )
 
 # Additional FetchContent_Declare calls as needed...
