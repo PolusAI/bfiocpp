@@ -21,7 +21,7 @@ TsReaderCPP::TsReaderCPP(const std::string& fname, FileType ft, const std::strin
         if (ft == FileType::OmeTiff){
             return GetOmeTiffSpecToRead(fname);
         } else {
-            return GetZarrSpecToRead(fname);
+            return GetZarrSpecToRead(fname, ft);
         }
     }();
 

@@ -1,6 +1,7 @@
 #include <iomanip>
 #include <ctime>
 #include "utilities.h"
+#include "../reader/tsreader.h"
 #include <cassert>
 #include <tiffio.h>
 #include <thread>
@@ -25,8 +26,9 @@ tensorstore::Spec GetOmeTiffSpecToRead(const std::string& filename){
                             }).value();
 }
 
-tensorstore::Spec GetZarrSpecToRead(const std::string& filename){
-    return tensorstore::Spec::FromJson({{"driver", "zarr"},
+tensorstore::Spec GetZarrSpecToRead(const std::string& filename, FileType ft){
+    std::string driver = (ft == FileType::OmeZarrV3) ? "zarr3" : "zarr";
+    return tensorstore::Spec::FromJson({{"driver", driver},
                             {"kvstore", {{"driver", "file"},
                                          {"path", filename}}
                             }

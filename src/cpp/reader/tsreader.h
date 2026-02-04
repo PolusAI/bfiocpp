@@ -27,7 +27,7 @@ using iter_indicies = std::tuple<std::int64_t,std::int64_t,std::int64_t,std::int
 namespace bfiocpp{
 
 
-enum class FileType {OmeTiff, OmeZarr};
+enum class FileType {OmeTiff, OmeZarrV2, OmeZarrV3};
 
 class TsReaderCPP{
 public:

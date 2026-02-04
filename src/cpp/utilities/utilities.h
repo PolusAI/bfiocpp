@@ -11,8 +11,10 @@
 
 namespace bfiocpp {
 
+enum class FileType;  // Forward declaration
+
 tensorstore::Spec GetOmeTiffSpecToRead(const std::string& filename);
-tensorstore::Spec GetZarrSpecToRead(const std::string& filename);
+tensorstore::Spec GetZarrSpecToRead(const std::string& filename, FileType ft);
 
 uint16_t GetDataTypeCode (std::string_view type_name);
 std::string GetEncodedType(uint16_t data_type_code);

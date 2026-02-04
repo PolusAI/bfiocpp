@@ -211,7 +211,7 @@ class TestOmeZarrRead(unittest.TestCase):
         """test_read_zarr_2d_slice - Read tiff using TSReader"""
         br = TSReader(
             str(TEST_DIR.joinpath("5025551.zarr/0")),
-            FileType.OmeZarr,
+            FileType.OmeZarrV2,
             "",
         )
         assert br._X == 2702
@@ -235,7 +235,7 @@ class TestOmeZarrRead(unittest.TestCase):
         """test_read_zarr_4d_slice - Read tiff using TSReader"""
         br = TSReader(
             str(TEST_DIR.joinpath("5025551.zarr/0")),
-            FileType.OmeZarr,
+            FileType.OmeZarrV2,
             "",
         )
 

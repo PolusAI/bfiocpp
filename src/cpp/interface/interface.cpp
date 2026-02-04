@@ -114,7 +114,8 @@ PYBIND11_MODULE(libbfiocpp, m) {
 
     py::enum_<bfiocpp::FileType>(m, "FileType")
         .value("OmeTiff", bfiocpp::FileType::OmeTiff)
-        .value("OmeZarr", bfiocpp::FileType::OmeZarr)
+        .value("OmeZarrV2", bfiocpp::FileType::OmeZarrV2)
+        .value("OmeZarrV3", bfiocpp::FileType::OmeZarrV3)
         .export_values();
     
     m.def("get_ome_xml", &bfiocpp::GetOmeXml);

@@ -59,7 +59,7 @@ class TestZarrWrite(unittest.TestCase):
 
         br = TSReader(
             str(TEST_DIR.joinpath("5025551.zarr/0")),
-            FileType.OmeZarr,
+            FileType.OmeZarrV2,
             "",
         )
 
@@ -92,7 +92,7 @@ class TestZarrWrite(unittest.TestCase):
 
             br = TSReader(
                 str(test_file_path),
-                FileType.OmeZarr,
+                FileType.OmeZarrV2,
                 "",
             )
 
@@ -107,7 +107,7 @@ class TestZarrWrite(unittest.TestCase):
 
         br = TSReader(
             str(TEST_DIR.joinpath("5025551.zarr/0")),
-            FileType.OmeZarr,
+            FileType.OmeZarrV2,
             "",
         )
 
@@ -140,7 +140,7 @@ class TestZarrWrite(unittest.TestCase):
 
             br = TSReader(
                 str(test_file_path),
-                FileType.OmeZarr,
+                FileType.OmeZarrV2,
                 "",
             )
 
@@ -155,7 +155,7 @@ class TestZarrWrite(unittest.TestCase):
 
         br = TSReader(
             str(TEST_DIR.joinpath("5025551.zarr/0")),
-            FileType.OmeZarr,
+            FileType.OmeZarrV2,
             "",
         )
 
@@ -202,7 +202,7 @@ class TestZarrWrite(unittest.TestCase):
 
             br = TSReader(
                 str(test_file_path),
-                FileType.OmeZarr,
+                FileType.OmeZarrV2,
                 "",
             )
 
@@ -225,7 +225,7 @@ class TestZarrWrite(unittest.TestCase):
 
         br = TSReader(
             str(TEST_DIR.joinpath("5025551.zarr/0")),
-            FileType.OmeZarr,
+            FileType.OmeZarrV2,
             "",
         )
         assert br._X == 2702
@@ -260,7 +260,7 @@ class TestZarrWrite(unittest.TestCase):
 
             br = TSReader(
                 str(test_file_path),
-                FileType.OmeZarr,
+                FileType.OmeZarrV2,
                 "",
             )
 
@@ -276,7 +276,7 @@ class TestZarrWrite(unittest.TestCase):
 
         br = TSReader(
             str(TEST_DIR.joinpath("5025551.zarr/0")),
-            FileType.OmeZarr,
+            FileType.OmeZarrV2,
             "",
         )
         assert br._X == 2702
@@ -331,7 +331,7 @@ class TestZarrWrite(unittest.TestCase):
 
             br = TSReader(
                 str(test_file_path),
-                FileType.OmeZarr,
+                FileType.OmeZarrV2,
                 "",
             )
 
@@ -351,7 +351,7 @@ class TestZarrWrite(unittest.TestCase):
 
         br = TSReader(
             str(TEST_DIR.joinpath("5025551.zarr/0")),
-            FileType.OmeZarr,
+            FileType.OmeZarrV2,
             "",
         )
 
@@ -374,7 +374,7 @@ class TestZarrWrite(unittest.TestCase):
 
         br = TSReader(
             str(TEST_DIR.joinpath("5025551.zarr/0")),
-            FileType.OmeZarr,
+            FileType.OmeZarrV2,
             "",
         )
 
@@ -397,7 +397,7 @@ class TestZarrWrite(unittest.TestCase):
 
         br = TSReader(
             str(TEST_DIR.joinpath("5025551.zarr/0")),
-            FileType.OmeZarr,
+            FileType.OmeZarrV2,
             "",
         )
 
