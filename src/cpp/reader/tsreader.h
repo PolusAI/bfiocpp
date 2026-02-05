@@ -4,12 +4,10 @@
 #include <memory>
 #include <vector>
 #include <variant>
-#include <iostream>
-#include <tuple>
 #include <optional>
-#include <unordered_map>
 #include "tensorstore/tensorstore.h"
 #include "../utilities/sequence.h"
+#include "../utilities/utilities.h"
 using image_data = std::variant<std::vector<std::uint8_t>,
                                 std::vector<std::uint16_t>, 
                                 std::vector<std::uint32_t>, 
@@ -25,9 +23,6 @@ using image_data = std::variant<std::vector<std::uint8_t>,
 using iter_indicies = std::tuple<std::int64_t,std::int64_t,std::int64_t,std::int64_t,std::int64_t,std::int64_t,std::int64_t>;
 
 namespace bfiocpp{
-
-
-enum class FileType {OmeTiff, OmeZarrV2, OmeZarrV3};
 
 class TsReaderCPP{
 public:

@@ -2,9 +2,10 @@
 
 #include <string>
 #include <vector>
+#include <optional>
 #include "tensorstore/tensorstore.h"
 #include "../utilities/sequence.h"
-#include "../reader/tsreader.h"  // For FileType enum
+#include "../utilities/utilities.h"
 #include <pybind11/numpy.h>
 
 namespace py = pybind11;
