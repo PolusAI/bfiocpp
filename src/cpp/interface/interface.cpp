@@ -122,7 +122,13 @@ PYBIND11_MODULE(libbfiocpp, m) {
 
     
     // Writer class
-    py::class_<bfiocpp::TsWriterCPP, std::shared_ptr<bfiocpp::TsWriterCPP>>(m, "TsWriterCPP") 
-    .def(py::init<const std::string&, const std::vector<std::int64_t>&, const std::vector<std::int64_t>&, const std::string&, const std::string&>())
+    py::class_<bfiocpp::TsWriterCPP, std::shared_ptr<bfiocpp::TsWriterCPP>>(m, "TsWriterCPP")
+    .def(py::init<const std::string&, const std::vector<std::int64_t>&, const std::vector<std::int64_t>&, const std::string&, const std::string&, bfiocpp::FileType>(),
+         py::arg("filename"),
+         py::arg("image_shape"),
+         py::arg("chunk_shape"),
+         py::arg("dtype"),
+         py::arg("dimension_order"),
+         py::arg("file_type") = bfiocpp::FileType::OmeZarrV2)
     .def("write_image_data", &bfiocpp::TsWriterCPP::WriteImageData);
 }

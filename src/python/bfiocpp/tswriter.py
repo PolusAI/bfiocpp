@@ -1,6 +1,6 @@
 import numpy as np
 from typing import Optional
-from .libbfiocpp import TsWriterCPP, Seq
+from .libbfiocpp import TsWriterCPP, Seq, FileType
 
 
 class TSWriter:
@@ -12,14 +12,20 @@ class TSWriter:
         chunk_shape: list,
         dtype: np.dtype,
         dimension_order: str,
+        file_type: FileType = FileType.OmeZarrV2,
     ):
         """Initialize tensorstore Zarr writer
 
         file_name: Path to write file to
+        image_shape: Shape of the image [T, C, Z, Y, X]
+        chunk_shape: Shape of chunks [T, C, Z, Y, X]
+        dtype: Data type of the image
+        dimension_order: Order of dimensions (e.g., "TCZYX")
+        file_type: FileType.OmeZarrV2 (default) or FileType.OmeZarrV3
         """
 
         self._image_writer: TsWriterCPP = TsWriterCPP(
-            file_name, image_shape, chunk_shape, str(dtype), dimension_order
+            file_name, image_shape, chunk_shape, str(dtype), dimension_order, file_type
         )
 
     def write_image_data(

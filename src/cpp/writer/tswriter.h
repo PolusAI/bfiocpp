@@ -4,6 +4,7 @@
 #include <vector>
 #include "tensorstore/tensorstore.h"
 #include "../utilities/sequence.h"
+#include "../reader/tsreader.h"  // For FileType enum
 #include <pybind11/numpy.h>
 
 namespace py = pybind11;
@@ -13,11 +14,12 @@ namespace bfiocpp{
 class TsWriterCPP{
 public:
     TsWriterCPP (
-        const std::string& fname, 
-        const std::vector<std::int64_t>& image_shape, 
+        const std::string& fname,
+        const std::vector<std::int64_t>& image_shape,
         const std::vector<std::int64_t>& chunk_shape,
         const std::string& dtype_str,
-        const std::string& dimension_order
+        const std::string& dimension_order,
+        FileType file_type = FileType::OmeZarrV2
     );
 
     void WriteImageData (

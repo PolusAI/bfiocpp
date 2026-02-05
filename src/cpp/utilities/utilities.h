@@ -21,8 +21,10 @@ std::string GetEncodedType(uint16_t data_type_code);
 std::string GetUTCString();
 std::string GetOmeXml(const std::string& file_path);
 std::tuple<std::optional<int>, std::optional<int>, std::optional<int>>ParseMultiscaleMetadata(const std::string& axes_list, int len);
-tensorstore::Spec GetZarrSpecToWrite(const std::string& filename, 
-                                    const std::vector<std::int64_t>& image_shape, 
+tensorstore::Spec GetZarrSpecToWrite(const std::string& filename,
+                                    const std::vector<std::int64_t>& image_shape,
                                     const std::vector<std::int64_t>& chunk_shape,
-                                    const std::string& dtype);
+                                    const std::string& dtype,
+                                    FileType ft);
+std::string GetZarrV3DataType(uint16_t data_type_code);
 } // ns bfiocpp

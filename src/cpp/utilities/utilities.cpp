@@ -154,28 +154,71 @@ std::string GetOmeXml(const std::string& file_path){
     return OmeXmlInfo;
 }
 
-tensorstore::Spec GetZarrSpecToWrite(   const std::string& filename, 
-                                        const std::vector<std::int64_t>& image_shape, 
-                                        const std::vector<std::int64_t>& chunk_shape,
-                                        const std::string& dtype){
+std::string GetZarrV3DataType(uint16_t data_type_code) {
+    // Zarr v3 uses plain dtype names instead of encoded format like "<u2"
+    switch (data_type_code) {
+        case 1: return "uint8";
+        case 2: return "uint16";
+        case 4: return "uint32";
+        case 8: return "uint64";
+        case 16: return "int8";
+        case 32: return "int16";
+        case 64: return "int32";
+        case 128: return "int64";
+        case 256: return "float32";
+        case 512: return "float64";
+        default: return "uint16";
+    }
+}
 
-    // valid values for dtype are subset of
-    // https://google.github.io/tensorstore/spec.html#json-dtype
-    return tensorstore::Spec::FromJson({{"driver", "zarr"},
-                            {"kvstore", {{"driver", "file"},
-                                         {"path", filename}}
-                            },
-                            {"context", {
-                              {"cache_pool", {{"total_bytes_limit", 1000000000}}},
-                              {"data_copy_concurrency", {{"limit", std::thread::hardware_concurrency()}}},
-                              {"file_io_concurrency", {{"limit", std::thread::hardware_concurrency()}}},
-                            }},
-                            {"metadata", {
-                                          {"zarr_format", 2},
-                                          {"shape", image_shape},
-                                          {"chunks", chunk_shape},
-                                          {"dtype", dtype},
-                                          },
-                            }}).value();
+tensorstore::Spec GetZarrSpecToWrite(   const std::string& filename,
+                                        const std::vector<std::int64_t>& image_shape,
+                                        const std::vector<std::int64_t>& chunk_shape,
+                                        const std::string& dtype,
+                                        FileType ft){
+
+    if (ft == FileType::OmeZarrV3) {
+        // Zarr v3 spec
+        return tensorstore::Spec::FromJson({{"driver", "zarr3"},
+                                {"kvstore", {{"driver", "file"},
+                                             {"path", filename}}
+                                },
+                                {"context", {
+                                  {"cache_pool", {{"total_bytes_limit", 1000000000}}},
+                                  {"data_copy_concurrency", {{"limit", std::thread::hardware_concurrency()}}},
+                                  {"file_io_concurrency", {{"limit", std::thread::hardware_concurrency()}}},
+                                }},
+                                {"metadata", {
+                                              {"shape", image_shape},
+                                              {"chunk_grid", {
+                                                  {"name", "regular"},
+                                                  {"configuration", {{"chunk_shape", chunk_shape}}}
+                                              }},
+                                              {"chunk_key_encoding", {{"name", "default"}}},
+                                              {"data_type", dtype},
+                                              {"codecs", {{{"name", "bytes"}, {"configuration", {{"endian", "little"}}}}}}
+                                              },
+                                }}).value();
+    } else {
+        // Zarr v2 spec (existing)
+        // valid values for dtype are subset of
+        // https://google.github.io/tensorstore/spec.html#json-dtype
+        return tensorstore::Spec::FromJson({{"driver", "zarr"},
+                                {"kvstore", {{"driver", "file"},
+                                             {"path", filename}}
+                                },
+                                {"context", {
+                                  {"cache_pool", {{"total_bytes_limit", 1000000000}}},
+                                  {"data_copy_concurrency", {{"limit", std::thread::hardware_concurrency()}}},
+                                  {"file_io_concurrency", {{"limit", std::thread::hardware_concurrency()}}},
+                                }},
+                                {"metadata", {
+                                              {"zarr_format", 2},
+                                              {"shape", image_shape},
+                                              {"chunks", chunk_shape},
+                                              {"dtype", dtype},
+                                              },
+                                }}).value();
+    }
 }
 } // ns bfiocpp
