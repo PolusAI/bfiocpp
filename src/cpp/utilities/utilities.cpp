@@ -1,7 +1,6 @@
 #include <iomanip>
 #include <ctime>
 #include "utilities.h"
-#include "../reader/tsreader.h"
 #include <cassert>
 #include <tiffio.h>
 #include <thread>
