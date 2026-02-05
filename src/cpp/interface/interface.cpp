@@ -114,14 +114,21 @@ PYBIND11_MODULE(libbfiocpp, m) {
 
     py::enum_<bfiocpp::FileType>(m, "FileType")
         .value("OmeTiff", bfiocpp::FileType::OmeTiff)
-        .value("OmeZarr", bfiocpp::FileType::OmeZarr)
+        .value("OmeZarrV2", bfiocpp::FileType::OmeZarrV2)
+        .value("OmeZarrV3", bfiocpp::FileType::OmeZarrV3)
         .export_values();
     
     m.def("get_ome_xml", &bfiocpp::GetOmeXml);
 
     
     // Writer class
-    py::class_<bfiocpp::TsWriterCPP, std::shared_ptr<bfiocpp::TsWriterCPP>>(m, "TsWriterCPP") 
-    .def(py::init<const std::string&, const std::vector<std::int64_t>&, const std::vector<std::int64_t>&, const std::string&, const std::string&>())
+    py::class_<bfiocpp::TsWriterCPP, std::shared_ptr<bfiocpp::TsWriterCPP>>(m, "TsWriterCPP")
+    .def(py::init<const std::string&, const std::vector<std::int64_t>&, const std::vector<std::int64_t>&, const std::string&, const std::string&, bfiocpp::FileType>(),
+         py::arg("filename"),
+         py::arg("image_shape"),
+         py::arg("chunk_shape"),
+         py::arg("dtype"),
+         py::arg("dimension_order"),
+         py::arg("file_type") = bfiocpp::FileType::OmeZarrV2)
     .def("write_image_data", &bfiocpp::TsWriterCPP::WriteImageData);
 }

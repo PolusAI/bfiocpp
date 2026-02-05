@@ -15,15 +15,20 @@ TsWriterCPP::TsWriterCPP(
     const std::vector<std::int64_t>& image_shape,
     const std::vector<std::int64_t>& chunk_shape,
     const std::string& dtype_str,
-    const std::string& dimension_order
+    const std::string& dimension_order,
+    FileType file_type
   ): _filename(fname),
      _image_shape(image_shape),
      _chunk_shape(chunk_shape),
      _dtype_code(GetDataTypeCode(dtype_str)) {
 
-    
+    // Use appropriate dtype encoding based on file type
+    std::string encoded_dtype = (file_type == FileType::OmeZarrV3)
+        ? GetZarrV3DataType(_dtype_code)
+        : GetEncodedType(_dtype_code);
+
     TENSORSTORE_CHECK_OK_AND_ASSIGN(_source, tensorstore::Open(
-        GetZarrSpecToWrite(_filename, _image_shape, _chunk_shape, GetEncodedType(_dtype_code)),
+        GetZarrSpecToWrite(_filename, _image_shape, _chunk_shape, encoded_dtype, file_type),
         tensorstore::OpenMode::create |
         tensorstore::OpenMode::delete_existing,
         tensorstore::ReadWriteMode::write).result()
