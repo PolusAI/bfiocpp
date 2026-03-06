@@ -22,15 +22,17 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
   
 set(CMAKE_CXX_FLAGS_RELEASE "-O2")
-set(SOURCE 
+set(SOURCE
           src/cpp/ts_driver/tiled_tiff/omexml.cc
           src/cpp/ts_driver/tiled_tiff/tiled_tiff_key_value_store.cc
           src/cpp/ts_driver/ometiff/metadata.cc
           src/cpp/ts_driver/ometiff/driver.cc
           src/cpp/interface/interface.cpp
           src/cpp/reader/tsreader.cpp
+          src/cpp/reader/niftireader.cpp
           src/cpp/utilities/utilities.cpp
           src/cpp/writer/tswriter.cpp
+          src/cpp/writer/niftiwriter.cpp
 )
 
 include(FetchContent)
@@ -61,6 +63,9 @@ else ()
 	message(STATUS "Unable to find threads. bfio_cpp must have a threading library i.e. pthreads.")
 endif ()
 
+#==== ZLIB (system, required for NIfTI .nii.gz decompression)
+find_package(ZLIB REQUIRED)
+
 #==== Pybind11
 find_package(pybind11 CONFIG REQUIRED)
 
@@ -76,7 +81,8 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_link_libraries(libbfiocpp PRIVATE stdc++fs)
 endif()
 
-target_link_libraries(libbfiocpp PRIVATE 
-                      tensorstore::tensorstore 
-                      tensorstore::all_drivers)
+target_link_libraries(libbfiocpp PRIVATE
+                      tensorstore::tensorstore
+                      tensorstore::all_drivers
+                      ZLIB::ZLIB)
 target_link_libraries(libbfiocpp PRIVATE ${Build_LIBRARIES})  

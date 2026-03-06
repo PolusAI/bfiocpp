@@ -4,9 +4,11 @@
 #include <pybind11/numpy.h>
 #include <tuple>
 #include "../reader/tsreader.h"
+#include "../reader/niftireader.h"
 #include "../utilities/sequence.h"
 #include "../utilities/utilities.h"
 #include "../writer/tswriter.h"
+#include "../writer/niftiwriter.h"
 
 namespace py = pybind11;
 using bfiocpp::Seq;
@@ -69,6 +71,19 @@ py::array get_iterator_requested_tile_data(bfiocpp::TsReaderCPP& tl,  std::int64
     return as_pyarray_shared_5d(tmp, ih, iw, id, nc, nt) ;
 }
 
+py::array get_nifti_image_data(bfiocpp::NiftiReaderCPP& nr,
+                               const Seq& rows, const Seq& cols,
+                               const Seq& layers, const Seq& channels,
+                               const Seq& tsteps) {
+    auto tmp = nr.GetImageData(rows, cols, layers, channels, tsteps);
+    auto ih = rows.Stop()    - rows.Start()    + 1;
+    auto iw = cols.Stop()    - cols.Start()    + 1;
+    auto id = layers.Stop()  - layers.Start()  + 1;
+    auto nc = channels.Stop()- channels.Start()+ 1;
+    auto nt = tsteps.Stop()  - tsteps.Start()  + 1;
+    return as_pyarray_shared_5d(tmp, ih, iw, id, nc, nt);
+}
+
 PYBIND11_MODULE(libbfiocpp, m) {
     py::class_<Seq, std::shared_ptr<Seq>>(m, "Seq")  
         .def(py::init<const size_t, const size_t, const size_t>());
@@ -116,12 +131,44 @@ PYBIND11_MODULE(libbfiocpp, m) {
         .value("OmeTiff", bfiocpp::FileType::OmeTiff)
         .value("OmeZarrV2", bfiocpp::FileType::OmeZarrV2)
         .value("OmeZarrV3", bfiocpp::FileType::OmeZarrV3)
+        .value("Nifti", bfiocpp::FileType::Nifti)
+        .value("NiftiGz", bfiocpp::FileType::NiftiGz)
         .export_values();
+
+    py::class_<bfiocpp::NiftiReaderCPP, std::shared_ptr<bfiocpp::NiftiReaderCPP>>(m, "NiftiReaderCPP")
+    .def(py::init<const std::string&>())
+    .def("get_image_height",  &bfiocpp::NiftiReaderCPP::GetImageHeight)
+    .def("get_image_width",   &bfiocpp::NiftiReaderCPP::GetImageWidth)
+    .def("get_image_depth",   &bfiocpp::NiftiReaderCPP::GetImageDepth)
+    .def("get_tile_height",   &bfiocpp::NiftiReaderCPP::GetTileHeight)
+    .def("get_tile_width",    &bfiocpp::NiftiReaderCPP::GetTileWidth)
+    .def("get_tile_depth",    &bfiocpp::NiftiReaderCPP::GetTileDepth)
+    .def("get_channel_count", &bfiocpp::NiftiReaderCPP::GetChannelCount)
+    .def("get_tstep_count",   &bfiocpp::NiftiReaderCPP::GetTstepCount)
+    .def("get_datatype",      &bfiocpp::NiftiReaderCPP::GetDataType)
+    .def("get_physical_size_x", &bfiocpp::NiftiReaderCPP::GetPhysicalSizeX)
+    .def("get_physical_size_y", &bfiocpp::NiftiReaderCPP::GetPhysicalSizeY)
+    .def("get_physical_size_z", &bfiocpp::NiftiReaderCPP::GetPhysicalSizeZ)
+    .def("get_image_data",
+        [](bfiocpp::NiftiReaderCPP& nr, const Seq& rows, const Seq& cols,
+           const Seq& layers, const Seq& channels, const Seq& tsteps) {
+            return get_nifti_image_data(nr, rows, cols, layers, channels, tsteps);
+        }, py::return_value_policy::reference);
     
     m.def("get_ome_xml", &bfiocpp::GetOmeXml);
 
-    
-    // Writer class
+    // NIfTI writer
+    py::class_<bfiocpp::NiftiWriterCPP, std::shared_ptr<bfiocpp::NiftiWriterCPP>>(m, "NiftiWriterCPP")
+    .def(py::init<const std::string&, const std::vector<std::int64_t>&,
+                  const std::string&, const std::string&>(),
+         py::arg("filename"),
+         py::arg("image_shape"),
+         py::arg("dtype"),
+         py::arg("dimension_order"))
+    .def("write_image_data", &bfiocpp::NiftiWriterCPP::WriteImageData)
+    .def("close", &bfiocpp::NiftiWriterCPP::Close);
+
+    // Zarr/OME-TIFF writer
     py::class_<bfiocpp::TsWriterCPP, std::shared_ptr<bfiocpp::TsWriterCPP>>(m, "TsWriterCPP")
     .def(py::init<const std::string&, const std::vector<std::int64_t>&, const std::vector<std::int64_t>&, const std::string&, const std::string&, bfiocpp::FileType>(),
          py::arg("filename"),

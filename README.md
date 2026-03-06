@@ -1,5 +1,14 @@
 This is the new backend for `bfio`, using `Tensorstore` and other high-throughput IO library
 
+## Supported Formats
+
+| Format | Read | Write |
+|--------|------|-------|
+| OME-TIFF | Yes | No |
+| OME-Zarr v2 | Yes | Yes |
+| OME-Zarr v3 | Yes | Yes |
+| NIfTI (.nii, .nii.gz) | Yes | Yes |
+
 ## Build Requirements
 
 `bfiocpp` uses `Tensorstore` for reading and writing OME Tiff and OME Zarr files. So `Tensorstore` build requirements are needed to be satisfied for `bfiocpp` also. 
