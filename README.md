@@ -7,7 +7,7 @@ This is the new backend for `bfio`, using `Tensorstore` and other high-throughpu
 | OME-TIFF | Yes | No |
 | OME-Zarr v2 | Yes | Yes |
 | OME-Zarr v3 | Yes | Yes |
-| NIfTI (.nii, .nii.gz) | Yes | No |
+| NIfTI (.nii, .nii.gz) | Yes | Yes |
 
 ## Build Requirements
 

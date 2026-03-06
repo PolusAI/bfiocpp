@@ -8,6 +8,7 @@
 #include "../utilities/sequence.h"
 #include "../utilities/utilities.h"
 #include "../writer/tswriter.h"
+#include "../writer/niftiwriter.h"
 
 namespace py = pybind11;
 using bfiocpp::Seq;
@@ -156,8 +157,18 @@ PYBIND11_MODULE(libbfiocpp, m) {
     
     m.def("get_ome_xml", &bfiocpp::GetOmeXml);
 
-    
-    // Writer class
+    // NIfTI writer
+    py::class_<bfiocpp::NiftiWriterCPP, std::shared_ptr<bfiocpp::NiftiWriterCPP>>(m, "NiftiWriterCPP")
+    .def(py::init<const std::string&, const std::vector<std::int64_t>&,
+                  const std::string&, const std::string&>(),
+         py::arg("filename"),
+         py::arg("image_shape"),
+         py::arg("dtype"),
+         py::arg("dimension_order"))
+    .def("write_image_data", &bfiocpp::NiftiWriterCPP::WriteImageData)
+    .def("close", &bfiocpp::NiftiWriterCPP::Close);
+
+    // Zarr/OME-TIFF writer
     py::class_<bfiocpp::TsWriterCPP, std::shared_ptr<bfiocpp::TsWriterCPP>>(m, "TsWriterCPP")
     .def(py::init<const std::string&, const std::vector<std::int64_t>&, const std::vector<std::int64_t>&, const std::string&, const std::string&, bfiocpp::FileType>(),
          py::arg("filename"),

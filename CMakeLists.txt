@@ -32,6 +32,7 @@ set(SOURCE
           src/cpp/reader/niftireader.cpp
           src/cpp/utilities/utilities.cpp
           src/cpp/writer/tswriter.cpp
+          src/cpp/writer/niftiwriter.cpp
 )
 
 include(FetchContent)
