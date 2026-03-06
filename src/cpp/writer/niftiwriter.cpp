@@ -278,10 +278,10 @@ void NiftiWriterCPP::WriteImageData(
     }
 
     // Clamp to valid image bounds
-    x0 = std::max(x0, 0L); x1 = std::min(x1, _nx - 1);
-    y0 = std::max(y0, 0L); y1 = std::min(y1, _ny - 1);
-    z0 = std::max(z0, 0L); z1 = std::min(z1, _nz - 1);
-    t0 = std::max(t0, 0L); t1 = std::min(t1, _nt - 1);
+    x0 = std::max(x0, 0L); x1 = std::min(x1, static_cast<long>(_nx - 1));
+    y0 = std::max(y0, 0L); y1 = std::min(y1, static_cast<long>(_ny - 1));
+    z0 = std::max(z0, 0L); z1 = std::min(z1, static_cast<long>(_nz - 1));
+    t0 = std::max(t0, 0L); t1 = std::min(t1, static_cast<long>(_nt - 1));
 
     if (x0 > x1 || y0 > y1)
         throw std::runtime_error("NiftiWriterCPP: empty write region");
