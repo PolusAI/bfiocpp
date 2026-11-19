@@ -92,6 +92,8 @@ jobs:
                                   dnf -y install --setopt=install_weak_deps=False maven maven-openjdk17
           CIBW_TEST_REQUIRES: "bfio requests numpy"
           CIBW_TEST_COMMAND: python -W default -m unittest discover -s {project}/tests -v
+          # ponytail: jpype1/numcodecs (via bfio) have no cp315 wheels on Linux/Windows; remove once they do
+          CIBW_TEST_SKIP: "cp315-manylinux_* cp315-win_*"
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
