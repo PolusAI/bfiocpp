@@ -91,7 +91,7 @@ jobs:
                                   dnf -y module enable maven:3.8 &&
                                   dnf -y install --setopt=install_weak_deps=False java-17-openjdk-headless &&
                                   dnf -y install --setopt=install_weak_deps=False maven maven-openjdk17
-          CIBW_TEST_REQUIRES: bfio requests numpy ome_zarr
+          CIBW_TEST_REQUIRES: bfio requests numpy
           CIBW_TEST_COMMAND: python -W default -m unittest discover -s {project}/tests -v
 
       - name: Install Dependencies
@@ -151,7 +151,7 @@ jobs:
             DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-listdeps {wheel} && 
             DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-wheel --require-archs {delocate_archs} -w {dest_dir} {wheel}
           CIBW_ARCHS: ${{ matrix.cibw_archs }}
-          CIBW_TEST_REQUIRES: bfio requests numpy ome_zarr
+          CIBW_TEST_REQUIRES: bfio requests numpy
           CIBW_TEST_COMMAND: python -W default -m unittest discover -s {project}/tests -v
 
       - name: Install Dependencies
