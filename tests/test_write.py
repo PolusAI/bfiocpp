@@ -1,16 +1,14 @@
 from bfiocpp import TSReader, TSWriter, Seq, FileType
 import unittest
-import requests, pathlib, shutil, logging, sys
-# SEE : Initialization of bio-formats java backend https://bio-formats.readthedocs.io/en/stable/developers/java-library.html
-# The order of initialization between ome_zarr.utils and bfio matters
-from ome_zarr.utils import download as zarr_download
+import pathlib, shutil, logging, sys
 import bfio
 import numpy as np
 import tempfile, os
 
-TEST_IMAGES = {
-    "5025551.zarr": "https://uk1s3.embassy.ebi.ac.uk/idr/zarr/v0.4/idr0054A/5025551.zarr",
-}
+try:
+    from ._data import SMALL_ZARR_URL, fetch_zarr
+except ImportError:  # run via `unittest discover -s tests`
+    from _data import SMALL_ZARR_URL, fetch_zarr
 
 TEST_DIR = pathlib.Path(__file__).with_name("data")
 
@@ -27,22 +25,7 @@ if "-v" in sys.argv:
 def setUpModule():
     """Download images for testing"""
     TEST_DIR.mkdir(exist_ok=True)
-
-    for file, url in TEST_IMAGES.items():
-        logger.info(f"setup - Downloading: {file}")
-
-        if not file.endswith(".zarr"):
-            if TEST_DIR.joinpath(file).exists():
-                continue
-
-            r = requests.get(url)
-
-            with open(TEST_DIR.joinpath(file), "wb") as fw:
-                fw.write(r.content)
-        else:
-            if TEST_DIR.joinpath(file).exists():
-                shutil.rmtree(TEST_DIR.joinpath(file))
-            zarr_download(url, str(TEST_DIR))
+    fetch_zarr(SMALL_ZARR_URL, TEST_DIR)
 
 
 def tearDownModule():
@@ -58,15 +41,15 @@ class TestZarrWrite(unittest.TestCase):
         """test_write_zarr_5d - Write zarr using TSWriter"""
 
         br = TSReader(
-            str(TEST_DIR.joinpath("5025551.zarr/0")),
+            str(TEST_DIR.joinpath("small_5d.zarr/0")),
             FileType.OmeZarrV2,
             "",
         )
 
-        assert br._X == 2702
-        assert br._Y == 2700
+        assert br._X == 302
+        assert br._Y == 300
         assert br._Z == 1
-        assert br._C == 27
+        assert br._C == 4
         assert br._T == 1
 
         rows = Seq(0, br._Y - 1, 1)
@@ -99,22 +82,22 @@ class TestZarrWrite(unittest.TestCase):
             tmp = br.data(rows, cols, layers, channels, tsteps)
 
             assert tmp.dtype == np.uint8
-            assert tmp.sum() == 183750394
-            assert tmp.shape == (1, 1, 1, 2700, 2702)
+            assert tmp.sum() == 11522078
+            assert tmp.shape == (1, 1, 1, 300, 302)
 
     def test_write_zarr_3d(self):
         """test_write_zarr_5d - Write zarr using TSWriter"""
 
         br = TSReader(
-            str(TEST_DIR.joinpath("5025551.zarr/0")),
+            str(TEST_DIR.joinpath("small_5d.zarr/0")),
             FileType.OmeZarrV2,
             "",
         )
 
-        assert br._X == 2702
-        assert br._Y == 2700
+        assert br._X == 302
+        assert br._Y == 300
         assert br._Z == 1
-        assert br._C == 27
+        assert br._C == 4
         assert br._T == 1
 
         rows = Seq(0, br._Y - 1, 1)
@@ -147,22 +130,22 @@ class TestZarrWrite(unittest.TestCase):
             tmp = br.data(rows, cols, layers)
 
             assert tmp.dtype == np.uint8
-            assert tmp.sum() == 183750394
-            assert tmp.shape == (1, 2700, 2702)
+            assert tmp.sum() == 11522078
+            assert tmp.shape == (1, 300, 302)
 
     def test_write_zarr_chunk_5d(self):
         """test_write_zarr_5d - Write zarr using TsWriter"""
 
         br = TSReader(
-            str(TEST_DIR.joinpath("5025551.zarr/0")),
+            str(TEST_DIR.joinpath("small_5d.zarr/0")),
             FileType.OmeZarrV2,
             "",
         )
 
-        assert br._X == 2702
-        assert br._Y == 2700
+        assert br._X == 302
+        assert br._Y == 300
         assert br._Z == 1
-        assert br._C == 27
+        assert br._C == 4
         assert br._T == 1
 
         rows = Seq(0, br._Y - 1, 1)
@@ -177,7 +160,7 @@ class TestZarrWrite(unittest.TestCase):
             test_file_path = os.path.join(dir, 'out/test.ome.zarr')
 
             print(tmp.shape)
-            chunk_shape = [1, 1, 1, 1350, 1351]
+            chunk_shape = [1, 1, 1, 150, 151]
             #chunk_shape = tmp.shape
             print("dtype: " + str(tmp.dtype))
             bw = TSWriter(test_file_path, tmp.shape, chunk_shape, str(tmp.dtype), "TCZYX")
@@ -217,21 +200,21 @@ class TestZarrWrite(unittest.TestCase):
             print(tmp)
 
             assert tmp.dtype == np.uint8
-            assert tmp.shape == (1, 1, 1, 2700, 2702)
-            assert tmp.sum() == 183750394
+            assert tmp.shape == (1, 1, 1, 300, 302)
+            assert tmp.sum() == 11522078
     
     def test_write_zarr_3d(self):
         """test_write_zarr_5d - Write zarr using TsWriter"""
 
         br = TSReader(
-            str(TEST_DIR.joinpath("5025551.zarr/0")),
+            str(TEST_DIR.joinpath("small_5d.zarr/0")),
             FileType.OmeZarrV2,
             "",
         )
-        assert br._X == 2702
-        assert br._Y == 2700
+        assert br._X == 302
+        assert br._Y == 300
         assert br._Z == 1
-        assert br._C == 27
+        assert br._C == 4
         assert br._T == 1
 
         rows = Seq(0, br._Y - 1, 1)
@@ -241,7 +224,7 @@ class TestZarrWrite(unittest.TestCase):
         tsteps = Seq(0, 0, 1)
         tmp = br.data(rows, cols, layers, channels, tsteps)
 
-        # Update shape to (1, 3, 1, 2700, 2702)
+        # Update shape to (1, 3, 1, 300, 302)
         tmp = np.repeat(tmp, 3, axis=1)  
 
         with tempfile.TemporaryDirectory() as dir:
@@ -267,22 +250,22 @@ class TestZarrWrite(unittest.TestCase):
             tmp = br.data(rows, cols, layers, channels, tsteps)
 
             assert tmp.dtype == np.uint8
-            assert tmp.sum() == 3*183750394
-            assert tmp.shape == (1, 3, 1, 2700, 2702)
+            assert tmp.sum() == 3*11522078
+            assert tmp.shape == (1, 3, 1, 300, 302)
 
 
     def test_write_zarr_chunk_3d(self):
         """test_write_zarr_5d - Write zarr using TsWriter"""
 
         br = TSReader(
-            str(TEST_DIR.joinpath("5025551.zarr/0")),
+            str(TEST_DIR.joinpath("small_5d.zarr/0")),
             FileType.OmeZarrV2,
             "",
         )
-        assert br._X == 2702
-        assert br._Y == 2700
+        assert br._X == 302
+        assert br._Y == 300
         assert br._Z == 1
-        assert br._C == 27
+        assert br._C == 4
         assert br._T == 1
 
         rows = Seq(0, br._Y - 1, 1)
@@ -292,7 +275,7 @@ class TestZarrWrite(unittest.TestCase):
         tsteps = Seq(0, 0, 1)
         tmp = br.data(rows, cols, layers, channels, tsteps)
 
-        # Update shape to (1, 3, 1, 2700, 2702)
+        # Update shape to (1, 3, 1, 300, 302)
         tmp = np.repeat(tmp, 3, axis=1)  
 
         with tempfile.TemporaryDirectory() as dir:
@@ -344,13 +327,13 @@ class TestZarrWrite(unittest.TestCase):
             tmp = br.data(rows, cols, layers, channels, tsteps)
 
             assert tmp.dtype == np.uint8
-            assert tmp.sum() == 3*183750394
-            assert tmp.shape == (1, 3, 1, 2700, 2702)
+            assert tmp.sum() == 3*11522078
+            assert tmp.shape == (1, 3, 1, 300, 302)
 
     def test_invalid_dimension_order_no_X(self):
 
         br = TSReader(
-            str(TEST_DIR.joinpath("5025551.zarr/0")),
+            str(TEST_DIR.joinpath("small_5d.zarr/0")),
             FileType.OmeZarrV2,
             "",
         )
@@ -373,7 +356,7 @@ class TestZarrWrite(unittest.TestCase):
     def test_invalid_dimension_order_no_Y(self):
 
         br = TSReader(
-            str(TEST_DIR.joinpath("5025551.zarr/0")),
+            str(TEST_DIR.joinpath("small_5d.zarr/0")),
             FileType.OmeZarrV2,
             "",
         )
@@ -396,7 +379,7 @@ class TestZarrWrite(unittest.TestCase):
     def test_invalid_dimension_order_character(self):
 
         br = TSReader(
-            str(TEST_DIR.joinpath("5025551.zarr/0")),
+            str(TEST_DIR.joinpath("small_5d.zarr/0")),
             FileType.OmeZarrV2,
             "",
         )

@@ -1,18 +1,19 @@
 from bfiocpp import TSReader, Seq, FileType
 import unittest
-import requests, pathlib, shutil, logging, sys
-# SEE : Initialization of bio-formats java backend https://bio-formats.readthedocs.io/en/stable/developers/java-library.html
-# The order of initialization between ome_zarr.utils and bfio matters
-from ome_zarr.utils import download as zarr_download
+import pathlib, shutil, logging, sys
 import bfio
 import numpy as np
 import random
 
 TEST_IMAGES = {
-    "5025551.zarr": "https://uk1s3.embassy.ebi.ac.uk/idr/zarr/v0.4/idr0054A/5025551.zarr",
     "p01_x01_y01_wx0_wy0_c1.ome.tif": "https://raw.githubusercontent.com/sameeul/polus-test-data/main/bfio/p01_x01_y01_wx0_wy0_c1.ome.tif",
     "Plate1-Blue-A-12-Scene-3-P3-F2-03.czi": "https://downloads.openmicroscopy.org/images/Zeiss-CZI/idr0011/Plate1-Blue-A_TS-Stinger/Plate1-Blue-A-12-Scene-3-P3-F2-03.czi",
 }
+
+try:
+    from ._data import SMALL_ZARR_URL, fetch, fetch_zarr
+except ImportError:  # run via `unittest discover -s tests`
+    from _data import SMALL_ZARR_URL, fetch, fetch_zarr
 
 TEST_DIR = pathlib.Path(__file__).with_name("data")
 
@@ -30,21 +31,12 @@ def setUpModule():
     """Download images for testing"""
     TEST_DIR.mkdir(exist_ok=True)
 
+    fetch_zarr(SMALL_ZARR_URL, TEST_DIR)
+
     for file, url in TEST_IMAGES.items():
         logger.info(f"setup - Downloading: {file}")
-
-        if not file.endswith(".zarr"):
-            if TEST_DIR.joinpath(file).exists():
-                continue
-
-            r = requests.get(url)
-
-            with open(TEST_DIR.joinpath(file), "wb") as fw:
-                fw.write(r.content)
-        else:
-            if TEST_DIR.joinpath(file).exists():
-                shutil.rmtree(TEST_DIR.joinpath(file))
-            zarr_download(url, str(TEST_DIR))
+        if not TEST_DIR.joinpath(file).exists():
+            fetch(url, TEST_DIR.joinpath(file))
 
     """Load the czi image, and save as a npy file for further testing."""
     with bfio.BioReader(
@@ -210,14 +202,14 @@ class TestOmeZarrRead(unittest.TestCase):
     def test_read_zarr_2d_slice(self):
         """test_read_zarr_2d_slice - Read tiff using TSReader"""
         br = TSReader(
-            str(TEST_DIR.joinpath("5025551.zarr/0")),
+            str(TEST_DIR.joinpath("small_5d.zarr/0")),
             FileType.OmeZarrV2,
             "",
         )
-        assert br._X == 2702
-        assert br._Y == 2700
+        assert br._X == 302
+        assert br._Y == 300
         assert br._Z == 1
-        assert br._C == 27
+        assert br._C == 4
         assert br._T == 1
 
         rows = Seq(0, br._Y - 1, 1)
@@ -228,24 +220,24 @@ class TestOmeZarrRead(unittest.TestCase):
         tmp = br.data(rows, cols, layers, channels, tsteps)
 
         assert tmp.dtype == np.uint8
-        assert tmp.sum() == 183750394
-        assert tmp.shape == (1, 1, 1, 2700, 2702)
+        assert tmp.sum() == 11522078
+        assert tmp.shape == (1, 1, 1, 300, 302)
 
     def test_read_zarr_4d_slice(self):
         """test_read_zarr_4d_slice - Read tiff using TSReader"""
         br = TSReader(
-            str(TEST_DIR.joinpath("5025551.zarr/0")),
+            str(TEST_DIR.joinpath("small_5d.zarr/0")),
             FileType.OmeZarrV2,
             "",
         )
 
-        rows = Seq(0, 1023, 1)
-        cols = Seq(0, 1023, 1)
+        rows = Seq(0, 255, 1)
+        cols = Seq(0, 255, 1)
         layers = Seq(0, 0, 1)
         channels = Seq(0, 3, 1)
         tsteps = Seq(0, 0, 1)
         tmp = br.data(rows, cols, layers, channels, tsteps)
 
         assert tmp.dtype == np.uint8
-        assert tmp.sum() == 81778531
-        assert tmp.shape == (1, 4, 1, 1024, 1024)
+        assert tmp.sum() == 33383535
+        assert tmp.shape == (1, 4, 1, 256, 256)
