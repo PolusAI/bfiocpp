@@ -5,10 +5,10 @@ import time
 import urllib.request
 import zipfile
 
-# Pinned to a commit of sameeul/polus-test-data; bump after the data PR merges.
+# Pinned to a commit of sameeul/polus-test-data (merge of PR #3).
 DATA_REPO = (
     "https://raw.githubusercontent.com/sameeul/polus-test-data/"
-    "1973e068e0942d593eec22e2b2a12b782352371f/bfio"
+    "9ec79af23d155a2bdb74823fa6fc6f204bbe2ca4/bfio"
 )
 SMALL_ZARR_URL = f"{DATA_REPO}/small_5d.zarr.zip"
 
